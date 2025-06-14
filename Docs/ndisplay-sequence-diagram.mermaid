@@ -1,0 +1,60 @@
+sequenceDiagram
+    participant Admin as 관리자
+    participant SBWeb as SB+ Web UI
+    participant SBServer as SB+ Server
+    participant DB as Database
+    participant SBTray as SB+ Tray
+    participant UE as 언리얼엔진
+
+    Note over SBTray: SB+ Client 초기화
+    SBTray->>SBServer: UDP 브로드캐스트<br/>(자동 등록)
+    SBServer->>DB: 클라이언트 정보 저장
+    SBServer->>SBWeb: 클라이언트 목록 업데이트
+    SBWeb->>Admin: 클라이언트 상태 표시
+
+    Note over Admin: 프리셋 생성
+    Admin->>SBWeb: 새 프리셋 생성<br/>(명령어 입력)
+    SBWeb->>SBServer: 프리셋 저장 요청
+    SBServer->>DB: 프리셋 정보 저장<br/>PresetCommand 저장
+    
+    Note over Admin: 프리셋 실행
+    Admin->>SBWeb: "전시회 모드" 실행 클릭
+    SBWeb->>SBServer: 프리셋 실행 요청
+    SBServer->>DB: 프리셋 명령어 조회
+    DB-->>SBServer: 클라이언트별 명령어 목록
+    
+    Note over SBServer: 명령어 배포
+    loop 실행 순서대로
+        SBServer->>SBTray: 전체 명령어 전송<br/>"C:/Displays/MyProject.exe ..."
+        SBTray->>SBTray: 명령어 직접 실행
+        SBTray->>UE: subprocess.Popen()
+        UE-->>SBTray: PID 반환
+        SBTray->>SBServer: 실행 성공 (PID: 12345)
+    end
+    
+    SBServer->>DB: 프리셋 상태 업데이트<br/>(is_active = true)
+    SBServer->>SBWeb: 실행 완료 알림
+    SBWeb->>Admin: UI 업데이트
+
+    Note over SBTray: 실시간 모니터링
+    loop 30초마다
+        SBTray->>SBTray: psutil로 리소스 수집
+        SBTray->>SBServer: 메트릭 + PID 상태 전송
+        SBServer->>SBWeb: 차트 데이터 업데이트
+    end
+
+    Note over Admin: 프리셋 중지
+    Admin->>SBWeb: 프리셋 중지 클릭
+    SBWeb->>SBServer: 중지 요청
+    SBServer->>DB: 활성 클라이언트 조회
+    
+    loop 각 클라이언트
+        SBServer->>SBTray: 프로세스 중지 명령
+        SBTray->>UE: 프로세스 종료 (PID 기준)
+        UE-->>SBTray: 종료 확인
+        SBTray->>SBServer: 상태 보고 (중지됨)
+    end
+    
+    SBServer->>DB: 프리셋 비활성화
+    SBServer->>SBWeb: 중지 완료
+    SBWeb->>Admin: UI 업데이트
