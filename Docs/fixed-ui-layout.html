@@ -125,7 +125,7 @@
             font-size: 13px;
         }
 
-        /* 프리셋 카드 */
+        /* 프리셋 카드 - 버튼 오른쪽 배치 */
         .preset-grid {
             display: grid;
             gap: 15px;
@@ -137,6 +137,9 @@
             padding: 15px;
             transition: all 0.3s ease;
             cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
         .preset-card:hover {
@@ -149,10 +152,15 @@
             background: #f0f4ff;
         }
 
+        .preset-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
         .preset-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 10px;
             margin-bottom: 10px;
         }
 
@@ -161,19 +169,24 @@
             font-weight: 600;
         }
 
+        .preset-status {
+            color: #4CAF50;
+            font-size: 14px;
+        }
+
         .preset-info {
             font-size: 13px;
             color: #666;
-            margin-bottom: 10px;
         }
 
         .preset-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        /* 그룹 카드 */
+        /* 그룹 카드 - 버튼 오른쪽 배치 */
         .group-grid {
             display: grid;
             gap: 15px;
@@ -184,11 +197,19 @@
             border-radius: 8px;
             padding: 15px;
             transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
         }
 
         .group-card:hover {
             border-color: #764ba2;
             background: #faf8ff;
+        }
+
+        .group-content {
+            flex: 1;
+            padding-right: 15px;
         }
 
         .group-header {
@@ -207,7 +228,13 @@
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            margin-bottom: 10px;
+        }
+
+        .group-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .client-tag {
@@ -285,11 +312,6 @@
             margin-bottom: 3px;
         }
 
-        .client-status {
-            font-size: 10px;
-            font-weight: 500;
-        }
-
         /* 통계 바 */
         .stats-bar {
             background: white;
@@ -347,7 +369,7 @@
             padding: 0;
             border-radius: 12px;
             width: 90%;
-            max-width: 700px;
+            max-width: 800px;
             max-height: 90vh;
             overflow: hidden;
             animation: slideUp 0.3s ease;
@@ -480,7 +502,7 @@
             font-style: italic;
         }
 
-        /* 디스플레이 서버 선택 그리드 */
+        /* 그룹 선택 그리드 */
         .client-select-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -526,7 +548,7 @@
         }
 
         .client-status {
-            width: 50px;
+            width: 8px;
             height: 8px;
             border-radius: 50%;
             margin-left: 10px;
@@ -540,59 +562,72 @@
             background: #f44336;
         }
 
-        /* 명령어 빌더 */
-        .command-builder {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
+        /* 클라이언트별 명령어 설정 */
+        .client-command-container {
             border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
         }
 
-        .command-template {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+        .client-command-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .client-command-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .client-command-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .client-command-ip {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .command-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .command-textarea {
+            min-height: 100px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        .command-templates {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .template-btn {
-            padding: 8px 12px;
-            border: 2px solid #e0e0e0;
+            padding: 6px 12px;
+            border: 1px solid #667eea;
             background: white;
-            border-radius: 6px;
+            color: #667eea;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             transition: all 0.2s ease;
         }
 
         .template-btn:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-
-        .command-preview {
-            background: #263238;
-            color: #aed581;
-            padding: 15px;
-            border-radius: 6px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            margin-top: 15px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-
-        /* 실행 순서 설정 */
-        .execution-order {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .order-input {
-            width: 80px;
+            background: #667eea;
+            color: white;
         }
 
         /* 모달 푸터 */
@@ -620,36 +655,6 @@
             font-size: 12px;
             font-weight: 600;
             margin-left: 8px;
-        }
-
-        /* 툴팁 */
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 8px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 12px;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
         }
 
         .toast {
@@ -752,10 +757,6 @@
             .client-select-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .command-template {
-                grid-template-columns: 1fr;
-            }
         }
 
         @media (max-width: 480px) {
@@ -800,41 +801,6 @@
             
             .client-ip {
                 display: none;
-            }
-        }
-
-        /* 태블릿 가로 모드 */
-        @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
-            .main-layout {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-        }
-
-        /* 터치 디바이스 최적화 */
-        @media (hover: none) and (pointer: coarse) {
-            .btn {
-                padding: 12px 24px;
-                font-size: 16px;
-            }
-            
-            .btn-small {
-                padding: 10px 18px;
-                font-size: 14px;
-            }
-            
-            .preset-card:hover,
-            .group-card:hover,
-            .client-item:hover {
-                transform: none;
-            }
-            
-            .preset-card:active,
-            .group-card:active {
-                transform: scale(0.98);
             }
         }
     </style>
@@ -946,8 +912,6 @@
                         <label>설명</label>
                         <textarea id="presetDescription" placeholder="이 프리셋이 언제 사용되는지, 어떤 설정인지 설명을 입력하세요">예: 관람객이 있을 때 사용하는 풀스크린 설정입니다. 모든 디스플레이 서버가 동기화되어 실행됩니다.</textarea>
                     </div>
-
-
                 </div>
 
                 <!-- 그룹 선택 섹션 -->
@@ -967,19 +931,16 @@
                     </div>
                 </div>
 
-                <!-- 명령어 설정 섹션 -->
-                <div class="form-section">
+                <!-- 클라이언트별 명령어 설정 섹션 -->
+                <div class="form-section" id="clientCommandsSection" style="display: none;">
                     <div class="form-section-title">
                         <span class="form-section-icon">3</span>
-                        실행 명령어 설정
+                        클라이언트별 실행 명령어 설정
+                        <span class="badge" id="commandClientCount">0개 클라이언트</span>
                     </div>
 
-                    <div class="form-group">
-                        <label>실행 명령어</label>
-                        <textarea id="commandInput" placeholder="예: C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_01 -fullscreen" style="min-height: 100px; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px;"></textarea>
-                        <div class="form-help">
-                            언리얼엔진 nDisplay를 실행할 전체 명령어를 입력하세요. 각 디스플레이 서버마다 다른 노드명이 필요한 경우 {node} 변수를 사용할 수 있습니다.
-                        </div>
+                    <div id="clientCommandsContainer">
+                        <!-- 선택된 그룹의 클라이언트들이 동적으로 생성됨 -->
                     </div>
                 </div>
             </div>
@@ -996,7 +957,7 @@
         </div>
     </div>
 
-    <!-- 개선된 그룹 생성 모달 -->
+    <!-- 그룹 생성 모달 -->
     <div class="modal" id="groupModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1087,7 +1048,6 @@
                 id: 1, 
                 name: "전시회 모드", 
                 description: "관람객용 풀스크린 설정",
-                clients: [1, 2, 3],
                 active: true,
                 commands: [
                     { clientId: 1, command: "C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_01 -fullscreen" },
@@ -1099,7 +1059,6 @@
                 id: 2, 
                 name: "데모 모드", 
                 description: "시연용 특별 설정",
-                clients: [1, 4, 5],
                 active: false,
                 commands: [
                     { clientId: 1, command: "C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=master -windowed" },
@@ -1111,7 +1070,6 @@
                 id: 3, 
                 name: "유지보수 모드", 
                 description: "점검용 최소 실행",
-                clients: [1],
                 active: false,
                 commands: [
                     { clientId: 1, command: "C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/test.ndisplay -dc_node=master -windowed -log" }
@@ -1120,12 +1078,19 @@
         ];
 
         let groups = [
-            { id: 1, name: "1층 전시장", clients: [1, 2, 3] },
-            { id: 2, name: "2층 전시장", clients: [4, 5] },
-            { id: 3, name: "메인 홀", clients: [1, 6] }
+            { id: 1, name: "1층 전시장", description: "1층 메인 전시장", clients: [1, 2, 3] },
+            { id: 2, name: "2층 전시장", description: "2층 상설 전시장", clients: [4, 5] },
+            { id: 3, name: "메인 홀", description: "중앙 로비 홀", clients: [1, 6] }
         ];
 
         let activePresetId = 1;
+
+        // 명령어 템플릿
+        const commandTemplates = {
+            "풀스크린": "C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node={node} -fullscreen",
+            "윈도우": "C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/test.ndisplay -dc_node={node} -windowed",
+            "개발": "C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/dev.ndisplay -dc_node=master -windowed -log"
+        };
 
         // 시간 업데이트
         function updateTime() {
@@ -1136,7 +1101,7 @@
         setInterval(updateTime, 1000);
         updateTime();
 
-        // 프리셋 렌더링
+        // 프리셋 렌더링 - 버튼을 오른쪽으로 배치
         function renderPresets() {
             const grid = document.getElementById('preset-grid');
             grid.innerHTML = '';
@@ -1145,18 +1110,21 @@
                 const card = document.createElement('div');
                 card.className = `preset-card ${preset.active ? 'active' : ''}`;
                 
-                const clientNames = preset.clients
-                    .map(id => clients.find(c => c.id === id)?.name || '')
+                const clientNames = preset.commands
+                    .map(cmd => clients.find(c => c.id === cmd.clientId)?.name || '')
+                    .filter(name => name)
                     .join(', ');
                 
                 card.innerHTML = `
-                    <div class="preset-header">
-                        <div class="preset-name">${preset.name}</div>
-                        ${preset.active ? '<span style="color: #4CAF50;">● 활성</span>' : ''}
-                    </div>
-                    <div class="preset-info">
-                        <div>디스플레이 서버: ${clientNames}</div>
-                        <div style="font-size: 11px; color: #888;">명령어 ${preset.commands.length}개 설정됨</div>
+                    <div class="preset-content">
+                        <div class="preset-header">
+                            <div class="preset-name">${preset.name}</div>
+                            ${preset.active ? '<span class="preset-status">● 활성</span>' : ''}
+                        </div>
+                        <div class="preset-info">
+                            <div>디스플레이 서버: ${clientNames}</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 5px;">명령어 ${preset.commands.length}개 설정됨</div>
+                        </div>
                     </div>
                     <div class="preset-actions">
                         ${preset.active ? 
@@ -1171,7 +1139,7 @@
             });
         }
 
-        // 그룹 렌더링
+        // 그룹 렌더링 - 버튼을 오른쪽으로 배치 (그룹 실행/중지 버튼 제거)
         function renderGroups() {
             const grid = document.getElementById('group-grid');
             grid.innerHTML = '';
@@ -1180,28 +1148,21 @@
                 const card = document.createElement('div');
                 card.className = 'group-card';
                 
-                const groupRunning = group.clients.some(clientId => {
-                    const client = clients.find(c => c.id === clientId);
-                    return client && client.status === 'running';
-                });
-                
                 card.innerHTML = `
-                    <div class="group-header">
-                        <div class="group-name">${group.name}</div>
-                        <span style="font-size: 12px; color: #666;">${group.clients.length}개 디스플레이 서버</span>
+                    <div class="group-content">
+                        <div class="group-header">
+                            <div class="group-name">${group.name}</div>
+                            <span style="font-size: 12px; color: #666;">${group.clients.length}개 디스플레이 서버</span>
+                        </div>
+                        <div class="group-clients">
+                            ${group.clients.map(clientId => {
+                                const client = clients.find(c => c.id === clientId);
+                                if (!client) return '';
+                                return `<span class="client-tag ${client.status}">${client.name}</span>`;
+                            }).join('')}
+                        </div>
                     </div>
-                    <div class="group-clients">
-                        ${group.clients.map(clientId => {
-                            const client = clients.find(c => c.id === clientId);
-                            if (!client) return '';
-                            return `<span class="client-tag ${client.status}">${client.name}</span>`;
-                        }).join('')}
-                    </div>
-                    <div class="preset-actions">
-                        ${groupRunning ? 
-                            `<button class="btn btn-danger btn-small" onclick="stopGroup(${group.id})">⏹️ 그룹 중지</button>` :
-                            `<button class="btn btn-primary btn-small" onclick="executeGroup(${group.id})">▶️ 그룹 실행</button>`
-                        }
+                    <div class="group-actions">
                         <button class="btn btn-secondary btn-small" onclick="editGroup(${group.id})">✏️ 편집</button>
                     </div>
                 `;
@@ -1210,7 +1171,7 @@
             });
         }
 
-        // 디스플레이 서버 모니터링 렌더링
+        // 디스플레이 서버 모니터링 렌더링 (상태 텍스트 제거)
         function renderClients() {
             const grid = document.getElementById('client-grid');
             grid.innerHTML = '';
@@ -1220,14 +1181,11 @@
                 item.className = `client-item ${client.status}`;
                 
                 let icon = '🖥️';
-                let statusText = '오프라인';
                 
                 if (client.status === 'running') {
                     icon = '🟢';
-                    statusText = '실행 중';
                 } else if (client.status === 'online') {
                     icon = '🟡';
-                    statusText = '온라인';
                 } else {
                     icon = '🔴';
                 }
@@ -1236,7 +1194,6 @@
                     <div class="client-icon">${icon}</div>
                     <div class="client-name">${client.name}</div>
                     <div class="client-ip">${client.ip}</div>
-                    <div class="client-status">${statusText}</div>
                     ${client.status === 'running' ? '<div class="running-indicator"></div>' : ''}
                 `;
                 
@@ -1270,10 +1227,17 @@
             preset.active = true;
             
             // 해당 디스플레이 서버들 실행 상태로 변경
-            clients.forEach(client => {
-                if (preset.clients.includes(client.id) && client.status === 'online') {
+            preset.commands.forEach(cmd => {
+                const client = clients.find(c => c.id === cmd.clientId);
+                if (client && client.status === 'online') {
                     client.status = 'running';
-                } else if (client.status === 'running' && !preset.clients.includes(client.id)) {
+                }
+            });
+            
+            // 다른 디스플레이 서버들은 온라인으로 변경
+            clients.forEach(client => {
+                const inActivePreset = preset.commands.some(cmd => cmd.clientId === client.id);
+                if (!inActivePreset && client.status === 'running') {
                     client.status = 'online';
                 }
             });
@@ -1290,8 +1254,8 @@
             preset.active = false;
             
             // 해당 디스플레이 서버들 정지
-            preset.clients.forEach(clientId => {
-                const client = clients.find(c => c.id === clientId);
+            preset.commands.forEach(cmd => {
+                const client = clients.find(c => c.id === cmd.clientId);
                 if (client && client.status === 'running') {
                     client.status = 'online';
                 }
@@ -1299,38 +1263,6 @@
             
             renderAll();
             showToast(`"${preset.name}" 프리셋을 중지했습니다.`);
-        }
-
-        // 그룹 실행
-        function executeGroup(id) {
-            const group = groups.find(g => g.id === id);
-            if (!group) return;
-            
-            group.clients.forEach(clientId => {
-                const client = clients.find(c => c.id === clientId);
-                if (client && client.status === 'online') {
-                    client.status = 'running';
-                }
-            });
-            
-            renderAll();
-            showToast(`"${group.name}" 그룹을 실행했습니다.`);
-        }
-
-        // 그룹 중지
-        function stopGroup(id) {
-            const group = groups.find(g => g.id === id);
-            if (!group) return;
-            
-            group.clients.forEach(clientId => {
-                const client = clients.find(c => c.id === clientId);
-                if (client && client.status === 'running') {
-                    client.status = 'online';
-                }
-            });
-            
-            renderAll();
-            showToast(`"${group.name}" 그룹을 중지했습니다.`);
         }
 
         // 모달 표시
@@ -1397,14 +1329,13 @@
             });
         }
 
-        // 기본 프리셋 옵션 업데이트 (제거)
-
         // 그룹 선택 토글
         function toggleGroup(element) {
             const checkbox = element.querySelector('input[type="checkbox"]');
             checkbox.checked = !checkbox.checked;
             element.classList.toggle('selected', checkbox.checked);
             updateSelectedGroupCount();
+            updateClientCommandsSection();
         }
 
         function toggleGroupMember(element) {
@@ -1425,26 +1356,103 @@
             document.getElementById('groupMemberCount').textContent = `${checked}개 선택됨`;
         }
 
+        // 클라이언트별 명령어 섹션 업데이트
+        function updateClientCommandsSection() {
+            const selectedGroups = Array.from(document.querySelectorAll('#presetGroupGrid input:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            const section = document.getElementById('clientCommandsSection');
+            const container = document.getElementById('clientCommandsContainer');
+            
+            if (selectedGroups.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            // 선택된 그룹들에서 모든 클라이언트 수집 (중복 제거)
+            const allClients = [...new Set(
+                selectedGroups.flatMap(groupId => {
+                    const group = groups.find(g => g.id === groupId);
+                    return group ? group.clients : [];
+                })
+            )];
+            
+            // 클라이언트 수 업데이트
+            document.getElementById('commandClientCount').textContent = `${allClients.length}개 클라이언트`;
+            
+            // 컨테이너 초기화
+            container.innerHTML = '';
+            
+            // 각 클라이언트별 명령어 입력 UI 생성
+            allClients.forEach(clientId => {
+                const client = clients.find(c => c.id === clientId);
+                if (!client) return;
+                
+                const commandContainer = document.createElement('div');
+                commandContainer.className = 'client-command-container';
+                commandContainer.innerHTML = `
+                    <div class="client-command-header">
+                        <div class="client-command-info">
+                            <div class="client-command-name">${client.name}</div>
+                            <div class="client-command-ip">${client.ip} (${client.node})</div>
+                        </div>
+                        <div class="client-status ${client.status === 'offline' ? 'offline' : 'online'}"></div>
+                    </div>
+                    <div class="command-input-group">
+                        <textarea 
+                            class="command-textarea" 
+                            id="command_${clientId}" 
+                            placeholder="실행할 전체 명령어를 입력하세요"
+                        ></textarea>
+                        <div class="form-help">
+                            이 디스플레이 서버에서 실행할 언리얼엔진 명령어를 입력하세요.
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(commandContainer);
+            });
+            
+            section.style.display = 'block';
+        }
 
+        // 템플릿 적용
+        function applyTemplate(templateName, clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            let command = commandTemplates[templateName];
+            if (command) {
+                // {node} 변수를 실제 노드명으로 치환
+                command = command.replace('{node}', client.node);
+                document.getElementById(`command_${clientId}`).value = command;
+            }
+        }
 
         // 모달 닫기
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+            
             // 폼 초기화
             if (modalId === 'presetModal') {
                 document.getElementById('presetName').value = '';
                 document.getElementById('presetDescription').value = '';
-                document.getElementById('commandInput').value = '';
+                
                 // 체크박스 초기화
                 document.querySelectorAll('#presetGroupGrid input[type="checkbox"]').forEach(cb => {
                     cb.checked = false;
                     cb.parentElement.classList.remove('selected');
                 });
                 updateSelectedGroupCount();
+                
+                // 명령어 섹션 숨기기
+                document.getElementById('clientCommandsSection').style.display = 'none';
+                
             } else if (modalId === 'groupModal') {
                 document.getElementById('groupName').value = '';
                 document.getElementById('groupDescription').value = '';
                 document.getElementById('groupColor').value = 'blue';
+                
                 // 체크박스 초기화
                 document.querySelectorAll('#groupClientGrid input[type="checkbox"]').forEach(cb => {
                     cb.checked = false;
@@ -1464,10 +1472,74 @@
                 return;
             }
             
-            const selectedClients = [];
-            document.querySelectorAll('#groupClientGrid input[type="checkbox"]:checked').forEach(cb => {
-                selectedClients.push(parseInt(cb.value));
+            const selectedGroups = Array.from(document.querySelectorAll('#presetGroupGrid input:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            if (selectedGroups.length === 0) {
+                showToast('최소 하나의 그룹을 선택해주세요.');
+                return;
+            }
+            
+            // 선택된 그룹들의 모든 클라이언트 수집
+            const allClients = [...new Set(
+                selectedGroups.flatMap(groupId => {
+                    const group = groups.find(g => g.id === groupId);
+                    return group ? group.clients : [];
+                })
+            )];
+            
+            // 각 클라이언트의 명령어 수집
+            const commands = [];
+            let hasEmptyCommand = false;
+            
+            allClients.forEach(clientId => {
+                const commandElement = document.getElementById(`command_${clientId}`);
+                const command = commandElement ? commandElement.value.trim() : '';
+                
+                if (!command) {
+                    hasEmptyCommand = true;
+                    return;
+                }
+                
+                commands.push({
+                    clientId: clientId,
+                    command: command
+                });
             });
+            
+            if (hasEmptyCommand) {
+                showToast('모든 디스플레이 서버의 명령어를 입력해주세요.');
+                return;
+            }
+            
+            // 새 프리셋 생성
+            const newPreset = {
+                id: presets.length + 1,
+                name: name,
+                description: description,
+                active: false,
+                commands: commands
+            };
+            
+            presets.push(newPreset);
+            renderAll();
+            closeModal('presetModal');
+            showToast(`"${name}" 프리셋이 추가되었습니다.`);
+        }
+
+        // 그룹 저장
+        function saveGroup() {
+            const name = document.getElementById('groupName').value;
+            const description = document.getElementById('groupDescription').value;
+            const color = document.getElementById('groupColor').value;
+            
+            if (!name) {
+                showToast('그룹 이름을 입력해주세요.');
+                return;
+            }
+            
+            const selectedClients = Array.from(document.querySelectorAll('#groupClientGrid input[type="checkbox"]:checked'))
+                .map(cb => parseInt(cb.value));
             
             if (selectedClients.length === 0) {
                 showToast('최소 하나의 디스플레이 서버를 선택해주세요.');
@@ -1477,8 +1549,8 @@
             const newGroup = {
                 id: groups.length + 1,
                 name: name,
-                description: document.getElementById('groupDescription').value,
-                color: document.getElementById('groupColor').value,
+                description: description,
+                color: color,
                 clients: selectedClients
             };
             
@@ -1500,42 +1572,34 @@
             // 그룹 그리드 업데이트
             updatePresetGroupGrid();
             
-            // 선택된 그룹 체크
-            if (preset.groups) {
-                preset.groups.forEach(groupId => {
-                    const checkbox = document.querySelector(`#presetGroupGrid input[value="${groupId}"]`);
+            // 프리셋에 포함된 클라이언트들이 속한 그룹 찾아서 선택
+            const presetClientIds = preset.commands.map(cmd => cmd.clientId);
+            groups.forEach(group => {
+                const hasCommonClients = group.clients.some(clientId => 
+                    presetClientIds.includes(clientId)
+                );
+                
+                if (hasCommonClients) {
+                    const checkbox = document.querySelector(`#presetGroupGrid input[value="${group.id}"]`);
                     if (checkbox) {
                         checkbox.checked = true;
                         checkbox.parentElement.classList.add('selected');
                     }
-                });
-            } else {
-                // 기존 프리셋 (디스플레이 서버 기반)과의 호환성
-                // 디스플레이 서버를 포함하는 그룹을 자동으로 선택
-                groups.forEach(group => {
-                    const hasAllClients = preset.clients.every(clientId => 
-                        group.clients.includes(clientId)
-                    );
-                    if (hasAllClients && preset.clients.length === group.clients.length) {
-                        const checkbox = document.querySelector(`#presetGroupGrid input[value="${group.id}"]`);
-                        if (checkbox) {
-                            checkbox.checked = true;
-                            checkbox.parentElement.classList.add('selected');
-                        }
+                }
+            });
+            
+            updateSelectedGroupCount();
+            updateClientCommandsSection();
+            
+            // 기존 명령어 복원
+            setTimeout(() => {
+                preset.commands.forEach(cmd => {
+                    const commandElement = document.getElementById(`command_${cmd.clientId}`);
+                    if (commandElement) {
+                        commandElement.value = cmd.command;
                     }
                 });
-            }
-            updateSelectedGroupCount();
-            
-            // 첫 번째 명령어를 입력칸에 표시
-            if (preset.commands.length > 0) {
-                // 첫 번째 명령어를 가져와서 {node} 변수로 치환
-                let command = preset.commands[0].command;
-                // node_01, node_02 등을 {node}로 치환
-                command = command.replace(/-dc_node=node_\d+/g, '-dc_node={node}');
-                command = command.replace(/-dc_node=master/g, '-dc_node=master');
-                document.getElementById('commandInput').value = command;
-            }
+            }, 100);
             
             document.getElementById('presetModal').style.display = 'flex';
         }
