@@ -1,0 +1,19 @@
+{
+  "server": {
+    "url": "http://localhost:3000",
+    "socket_url": "ws://localhost:3000"
+  },
+  "client": {
+    "name": "Display_01",
+    "heartbeat_interval": 5,
+    "broadcast_interval": 10,
+    "auto_restart": true,
+    "max_retries": 3
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/client.log",
+    "max_size": "10MB",
+    "backup_count": 5
+  }
+}
