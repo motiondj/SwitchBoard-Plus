@@ -2,12 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import App from './App'
+import App from './App.jsx'
 import store from './store'
 import getTheme from './theme'
-import './index.css'
-import './styles/global.css'
+import './styles/switchboard-plus-styles.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -18,7 +16,6 @@ const AppWithTheme = () => {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <CssBaseline />
         <App />
       </ThemeProvider>
     </Provider>

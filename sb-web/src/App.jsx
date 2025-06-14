@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { Container } from '@mui/material';
 import Header from './components/common/Header';
 import Dashboard from './components/dashboard/Dashboard';
 import Toast from './components/common/Toast';
@@ -8,7 +7,6 @@ import { connectSocket } from './store/middleware/socketMiddleware';
 // import { fetchClients } from './store/slices/clientsSlice';
 // import { fetchPresets } from './store/slices/presetsSlice';
 // import { fetchGroups } from './store/slices/groupsSlice';
-import './App.css';
 
 function App() {
   const dispatch = useDispatch();
@@ -29,11 +27,11 @@ function App() {
   }, [dispatch]);
 
   return (
-    <div className="app">
+    <div>
       <Header />
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <div className="container">
         <Dashboard />
-      </Container>
+      </div>
       <Toast />
     </div>
   );
