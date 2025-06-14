@@ -1,21 +1,20 @@
 import React from 'react';
-import { Box, Grid } from '@mui/material';
 import { useSelector } from 'react-redux';
 import PresetCard from './PresetCard';
 
 const PresetList = () => {
-  const presets = useSelector((state) => state.presets.items) || [];
+  const presets = useSelector(state => state.presets.items);
+
+  if (!presets || presets.length === 0) {
+    return <div style={{ color: '#888', padding: '20px 0' }}>등록된 프리셋이 없습니다.</div>;
+  }
 
   return (
-    <Box>
-      <Grid container spacing={2}>
-        {presets.map((preset) => (
-          <Grid item xs={12} sm={6} md={4} key={preset.id}>
-            <PresetCard preset={preset} />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+    <div className="preset-grid" style={{ display: 'grid', gap: 15, gridTemplateColumns: '1fr 1fr' }}>
+      {presets.map(preset => (
+        <PresetCard key={preset.id} preset={preset} />
+      ))}
+    </div>
   );
 };
 

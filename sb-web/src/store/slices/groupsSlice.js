@@ -53,7 +53,11 @@ export const removeClientFromGroup = createAsyncThunk(
 );
 
 const initialState = {
-  items: [],
+  items: [
+    { id: 1, name: '1층 전시장', description: '1층 메인 전시장', color: 'blue', clients: [1, 2, 3] },
+    { id: 2, name: '2층 전시장', description: '2층 상설 전시장', color: 'green', clients: [4, 5] },
+    { id: 3, name: '메인 홀', description: '중앙 로비 홀', color: 'purple', clients: [1, 6] }
+  ],
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };

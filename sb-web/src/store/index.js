@@ -1,19 +1,21 @@
 import { configureStore } from '@reduxjs/toolkit';
+import clientReducer from './slices/clientSlice';
+import presetReducer from './slices/presetSlice';
+import groupReducer from './slices/groupSlice';
 import uiReducer from './slices/uiSlice';
-import clientsReducer from './slices/clientsSlice';
-import presetsReducer from './slices/presetsSlice';
-import groupsReducer from './slices/groupsSlice';
 import { socketMiddleware } from './middleware/socketMiddleware';
 
-export const store = configureStore({
+const store = configureStore({
     reducer: {
-        ui: uiReducer,
-        clients: clientsReducer,
-        presets: presetsReducer,
-        groups: groupsReducer
+        clients: clientReducer,
+        presets: presetReducer,
+        groups: groupReducer,
+        ui: uiReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: false
         }).concat(socketMiddleware)
-}); 
+});
+
+export default store; 

@@ -8,7 +8,8 @@ const initialState = {
     group: false
   },
   loading: false,
-  loadingMessage: null
+  loadingMessage: '',
+  error: null
 };
 
 const uiSlice = createSlice({
@@ -41,6 +42,12 @@ const uiSlice = createSlice({
     },
     setLoadingMessage: (state, action) => {
       state.loadingMessage = action.payload;
+    },
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
+    clearError: (state) => {
+      state.error = null;
     }
   }
 });
@@ -54,7 +61,9 @@ export const {
   openPresetModal,
   closePresetModal,
   setLoading,
-  setLoadingMessage
+  setLoadingMessage,
+  setError,
+  clearError
 } = uiSlice.actions;
 
 export default uiSlice.reducer; 

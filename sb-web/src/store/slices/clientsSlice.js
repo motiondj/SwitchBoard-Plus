@@ -51,7 +51,14 @@ export const stopClients = createAsyncThunk(
 );
 
 const initialState = {
-  items: [],
+  items: [
+    { id: 1, name: 'Display 1', ip: '192.168.1.101', node: 'node_01', status: 'running' },
+    { id: 2, name: 'Display 2', ip: '192.168.1.102', node: 'node_02', status: 'online' },
+    { id: 3, name: 'Display 3', ip: '192.168.1.103', node: 'node_03', status: 'running' },
+    { id: 4, name: 'Display 4', ip: '192.168.1.104', node: 'node_04', status: 'offline' },
+    { id: 5, name: 'Display 5', ip: '192.168.1.105', node: 'node_05', status: 'online' },
+    { id: 6, name: 'Display 6', ip: '192.168.1.106', node: 'node_06', status: 'offline' }
+  ],
   status: 'idle',
   error: null,
   metrics: {}

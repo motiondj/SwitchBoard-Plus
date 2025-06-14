@@ -53,10 +53,42 @@ export const stopPreset = createAsyncThunk(
 );
 
 const initialState = {
-  items: [],
-  activePresetId: null,
-  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  items: [
+    {
+      id: 1,
+      name: '전시회 모드',
+      description: '관람객용 풀스크린 설정',
+      active: true,
+      commands: [
+        { clientId: 1, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_01 -fullscreen' },
+        { clientId: 2, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_02 -fullscreen' },
+        { clientId: 3, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_03 -fullscreen' }
+      ]
+    },
+    {
+      id: 2,
+      name: '데모 모드',
+      description: '시연용 특별 설정',
+      active: false,
+      commands: [
+        { clientId: 1, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=master -windowed' },
+        { clientId: 4, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=node_01 -windowed' },
+        { clientId: 5, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=node_02 -windowed' }
+      ]
+    },
+    {
+      id: 3,
+      name: '유지보수 모드',
+      description: '점검용 최소 실행',
+      active: false,
+      commands: [
+        { clientId: 1, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/test.ndisplay -dc_node=master -windowed -log' }
+      ]
+    }
+  ],
+  status: 'idle',
   error: null,
+  activePresetId: 1
 };
 
 const presetsSlice = createSlice({

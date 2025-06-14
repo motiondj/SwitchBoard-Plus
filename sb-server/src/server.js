@@ -6,6 +6,7 @@ const logger = require('./utils/logger');
 const routes = require('./routes');
 const { initializeSocket } = require('./services/socketService');
 const { initializeUDP } = require('./services/udpService');
+const db = require('./models');
 
 // Express 앱 초기화
 const app = express();
@@ -20,6 +21,15 @@ app.use('/api', routes);
 
 // 테스트 환경이 아닐 때만 Socket.io와 UDP 서버 초기화
 if (process.env.NODE_ENV !== 'test') {
+  // 데이터베이스 동기화
+  db.sequelize.sync({ force: false })
+    .then(() => {
+      logger.info('데이터베이스가 성공적으로 동기화되었습니다.');
+    })
+    .catch((error) => {
+      logger.error('데이터베이스 동기화 중 오류 발생:', error);
+    });
+
   // Socket.io 초기화
   initializeSocket(server);
 

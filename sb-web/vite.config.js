@@ -6,8 +6,12 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [
     react({
-      fastRefresh: true,
-      jsxRuntime: 'automatic'
+      jsxRuntime: 'automatic',
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
     })
   ],
   resolve: {

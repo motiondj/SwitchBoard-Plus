@@ -1,21 +1,20 @@
 import React from 'react';
-import { Box, Grid } from '@mui/material';
 import { useSelector } from 'react-redux';
 import GroupCard from './GroupCard';
 
 const GroupList = () => {
-  const groups = useSelector((state) => state.groups.items) || [];
+  const groups = useSelector(state => state.groups.items);
+
+  if (!groups || groups.length === 0) {
+    return <div style={{ color: '#888', padding: '20px 0' }}>등록된 그룹이 없습니다.</div>;
+  }
 
   return (
-    <Box>
-      <Grid container spacing={2}>
-        {groups.map((group) => (
-          <Grid item xs={12} sm={6} md={4} key={group.id}>
-            <GroupCard group={group} />
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+    <div className="group-grid" style={{ display: 'grid', gap: 15, gridTemplateColumns: '1fr 1fr' }}>
+      {groups.map(group => (
+        <GroupCard key={group.id} group={group} />
+      ))}
+    </div>
   );
 };
 
