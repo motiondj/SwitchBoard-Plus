@@ -8,7 +8,7 @@ const StatsBar = () => {
   const groups = useSelector((state) => state.groups.items) || [];
 
   const stats = [
-    { label: '연결된 클라이언트', value: clients.filter(c => c.status === 'connected').length },
+    { label: '연결된 클라이언트', value: clients.filter(c => c.status === 'online').length },
     { label: '프리셋', value: presets.length },
     { label: '그룹', value: groups.length }
   ];

@@ -4,7 +4,12 @@ import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      fastRefresh: true,
+      jsxRuntime: 'automatic'
+    })
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -36,17 +41,15 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:4000',
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        secure: false
       },
       '/socket.io': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:4000',
         changeOrigin: true,
         secure: false,
-        ws: true,
-        rewrite: (path) => path.replace(/^\/socket.io/, '')
+        ws: true
       }
     }
   },

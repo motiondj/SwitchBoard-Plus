@@ -19,14 +19,26 @@ function App() {
         dispatch(setLoadingMessage('초기화 중...'));
 
         // Socket 연결 초기화
-        dispatch(connectSocket());
+        await dispatch(connectSocket());
 
         // 초기 데이터 로드
-        await Promise.all([
-          dispatch(fetchClients()),
-          dispatch(fetchPresets()),
-          dispatch(fetchGroups())
-        ]);
+        try {
+          await dispatch(fetchClients()).unwrap();
+        } catch (error) {
+          console.error('클라이언트 데이터 로드 실패:', error);
+        }
+
+        try {
+          await dispatch(fetchPresets()).unwrap();
+        } catch (error) {
+          console.error('프리셋 데이터 로드 실패:', error);
+        }
+
+        try {
+          await dispatch(fetchGroups()).unwrap();
+        } catch (error) {
+          console.error('그룹 데이터 로드 실패:', error);
+        }
 
         dispatch(setLoadingMessage(null));
         dispatch(setLoading(false));
