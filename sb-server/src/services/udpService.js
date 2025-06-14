@@ -9,6 +9,28 @@ class UDPService {
     this.PORT = 9999;
     this.BROADCAST_ADDR = '255.255.255.255';
     this.HEARTBEAT_INTERVAL = 5000; // 5초
+    this.HEARTBEAT_TIMEOUT = 15000; // 15초
+    this.startHeartbeatMonitor();
+  }
+
+  startHeartbeatMonitor() {
+    setInterval(async () => {
+      try {
+        const now = new Date();
+        const clients = await Client.findAll({ where: { status: 'online' } });
+        for (const client of clients) {
+          if (client.lastSeen && (now - new Date(client.lastSeen) > this.HEARTBEAT_TIMEOUT)) {
+            await client.update({ 
+              status: 'offline',
+              lastSeen: now
+            });
+            logger.info(`하트비트 타임아웃: ${client.ip} ${client.uuid} offline 처리됨`);
+          }
+        }
+      } catch (e) {
+        logger.error('하트비트 타임아웃 검사 중 오류:', e);
+      }
+    }, 5000); // 5초마다 검사
   }
 
   async start() {
@@ -64,7 +86,7 @@ class UDPService {
           ip: rinfo.address,
           port: rinfo.port,
           status: 'online',
-          last_heartbeat: new Date()
+          lastSeen: new Date()
         }
       });
 
@@ -76,7 +98,7 @@ class UDPService {
           ip: rinfo.address,
           port: rinfo.port,
           status: 'online',
-          last_heartbeat: new Date()
+          lastSeen: new Date()
         });
       }
 
@@ -111,11 +133,11 @@ class UDPService {
       if (client) {
         await client.update({
           status: 'online',
-          last_heartbeat: new Date(),
+          lastSeen: new Date(),
           ip: rinfo.address,
           port: rinfo.port
         });
-        logger.debug(`클라이언트 하트비트 업데이트: ${client.name} (${uuid})`);
+        logger.debug(`${rinfo.address} ${uuid}`);
       }
     } catch (error) {
       logger.error('하트비트 처리 중 오류:', error);
