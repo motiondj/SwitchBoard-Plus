@@ -13,8 +13,10 @@ const db = require('./models');
 const app = express();
 const server = http.createServer(app);
 
-// 미들웨어 설정
+// CORS 설정
 app.use(cors());
+
+// 미들웨어 설정
 app.use(express.json());
 
 // API 라우트 설정

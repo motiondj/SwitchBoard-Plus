@@ -1,0 +1,107 @@
+graph LR
+    subgraph "UI Layer (React Components)"
+        PC[PresetCard]
+        GC[GroupCard]
+        CC[ClientCard]
+        PM[PresetModal]
+        GM[GroupModal]
+    end
+
+    subgraph "Redux Store"
+        subgraph "Slices"
+            PS[presetsSlice]
+            GS[groupsSlice]
+            CS[clientsSlice]
+            US[uiSlice]
+        end
+        
+        subgraph "Actions"
+            SA[Sync Actions]
+            AA[Async Actions]
+            SM[Socket Messages]
+        end
+    end
+
+    subgraph "Middleware Layer"
+        SocketMW[Socket Middleware]
+        AsyncThunk[Redux Thunk]
+    end
+
+    subgraph "Service Layer"
+        PresetAPI[presetAPI.js]
+        GroupAPI[groupAPI.js]
+        ClientAPI[clientAPI.js]
+        Socket[Socket.io Client]
+    end
+
+    subgraph "Backend"
+        Server[Node.js Server]
+        DB[(SQLite DB)]
+    end
+
+    %% 사용자 액션 → Redux
+    PC -->|"useDispatch(executePreset)"| PS
+    GC -->|"useDispatch(updateGroup)"| GS
+    PM -->|"useDispatch(createPreset)"| PS
+    GM -->|"useDispatch(createGroup)"| GS
+
+    %% Redux → Middleware
+    PS -->|"AsyncThunk"| AsyncThunk
+    GS -->|"AsyncThunk"| AsyncThunk
+    CS -->|"AsyncThunk"| AsyncThunk
+
+    %% Middleware → API Services
+    AsyncThunk -->|"API Call"| PresetAPI
+    AsyncThunk -->|"API Call"| GroupAPI
+    AsyncThunk -->|"API Call"| ClientAPI
+
+    %% API Services → Backend
+    PresetAPI -->|"HTTP Request"| Server
+    GroupAPI -->|"HTTP Request"| Server
+    ClientAPI -->|"HTTP Request"| Server
+    Server <--> DB
+
+    %% Socket 통신
+    Server -->|"Socket Events"| Socket
+    Socket -->|"Real-time Data"| SocketMW
+    SocketMW -->|"Dispatch Actions"| CS
+    SocketMW -->|"Dispatch Actions"| PS
+
+    %% Redux State → UI
+    PS -.->|"useSelector"| PC
+    GS -.->|"useSelector"| GC
+    CS -.->|"useSelector"| CC
+    US -.->|"useSelector"| PM
+    US -.->|"useSelector"| GM
+
+    %% UI State Updates
+    PS -.->|"State Change"| PC
+    GS -.->|"State Change"| GC
+    CS -.->|"State Change"| CC
+
+    %% 데이터 플로우 예시 (프리셋 실행)
+    subgraph "Example: 프리셋 실행 플로우"
+        E1["1. 사용자가 실행 버튼 클릭"]
+        E2["2. executePreset 액션 디스패치"]
+        E3["3. AsyncThunk가 API 호출"]
+        E4["4. 서버에서 명령 처리"]
+        E5["5. Socket으로 상태 업데이트"]
+        E6["6. UI 컴포넌트 리렌더링"]
+        
+        E1 --> E2 --> E3 --> E4 --> E5 --> E6
+    end
+
+    %% 스타일링
+    classDef uiComponent fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef reduxComponent fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef middlewareComponent fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef serviceComponent fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef backendComponent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef exampleFlow fill:#ffebee,stroke:#d32f2f,stroke-width:1px,stroke-dasharray: 5 5
+
+    class PC,GC,CC,PM,GM uiComponent
+    class PS,GS,CS,US,SA,AA,SM reduxComponent
+    class SocketMW,AsyncThunk middlewareComponent
+    class PresetAPI,GroupAPI,ClientAPI,Socket serviceComponent
+    class Server,DB backendComponent
+    class E1,E2,E3,E4,E5,E6 exampleFlow

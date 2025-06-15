@@ -2,6 +2,7 @@ const dgram = require('dgram');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
 const { Client } = require('../models');
+const { emitClientStatus } = require('./socketService');
 
 class UDPService {
   constructor() {
@@ -9,7 +10,7 @@ class UDPService {
     this.PORT = 9999;
     this.BROADCAST_ADDR = '255.255.255.255';
     this.HEARTBEAT_INTERVAL = 5000; // 5초
-    this.HEARTBEAT_TIMEOUT = 15000; // 15초
+    this.HEARTBEAT_TIMEOUT = 6000; // 6초
     this.startHeartbeatMonitor();
   }
 
@@ -25,6 +26,7 @@ class UDPService {
               lastSeen: now
             });
             logger.info(`하트비트 타임아웃: ${client.ip} ${client.uuid} offline 처리됨`);
+            emitClientStatus(client);
           }
         }
       } catch (e) {
@@ -138,6 +140,7 @@ class UDPService {
           port: rinfo.port
         });
         logger.debug(`${rinfo.address} ${uuid}`);
+        emitClientStatus(client);
       }
     } catch (error) {
       logger.error('하트비트 처리 중 오류:', error);

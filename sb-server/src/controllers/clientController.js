@@ -5,9 +5,11 @@ const { AppError } = require('../middleware/errorHandler');
 // 전체 클라이언트 목록 조회
 exports.getAllClients = async (req, res) => {
   try {
+    logger.info('클라이언트 목록 조회 요청');
     const clients = await Client.findAll({
       order: [['name', 'ASC']]
     });
+    logger.info(`클라이언트 목록 조회 성공: ${clients.length}개`);
     res.json(clients);
   } catch (error) {
     logger.error('클라이언트 목록 조회 실패:', error);
@@ -36,7 +38,7 @@ exports.getClientByUuid = async (req, res) => {
 // 클라이언트 등록/업데이트
 exports.upsertClient = async (req, res) => {
   try {
-    const { uuid, name, ip, metrics, config } = req.body;
+    const { uuid, name, ip, metrics, config, socketId } = req.body;
 
     if (!uuid || !name || !ip) {
       return res.status(400).json({ error: 'UUID, name, and IP are required' });
@@ -53,7 +55,8 @@ exports.upsertClient = async (req, res) => {
         ip,
         metrics: metrics || {},
         config: config || {},
-        status: 'online'
+        status: 'online',
+        socketId: socketId || null
       });
       return res.status(201).json(newClient);
     }
@@ -64,7 +67,8 @@ exports.upsertClient = async (req, res) => {
       ip,
       metrics: metrics || existingClient.metrics,
       config: config || existingClient.config,
-      status: 'online'
+      status: 'online',
+      socketId: socketId || existingClient.socketId
     });
     return res.status(200).json(updatedClient);
   } catch (error) {

@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import GroupCard from './GroupCard';
 
-const GroupList = () => {
+const GroupList = ({ onEdit }) => {
   const groups = useSelector(state => state.groups.items);
 
   if (!groups || groups.length === 0) {
@@ -10,9 +10,9 @@ const GroupList = () => {
   }
 
   return (
-    <div className="group-grid" style={{ display: 'grid', gap: 15, gridTemplateColumns: '1fr 1fr' }}>
+    <div className="group-grid">
       {groups.map(group => (
-        <GroupCard key={group.id} group={group} />
+        <GroupCard key={group.id} group={group} onEdit={onEdit} />
       ))}
     </div>
   );

@@ -1,22 +1,38 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = 'http://localhost:4000/api';
 
 // 비동기 액션 생성
 export const fetchPresets = createAsyncThunk(
   'presets/fetchPresets',
-  async () => {
-    const response = await axios.get(`${API_URL}/presets`);
-    return response.data;
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log('프리셋 목록 가져오기 시작');
+      const response = await axios.get(`${API_URL}/presets`);
+      console.log('프리셋 목록 응답:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('프리셋 목록 가져오기 실패:', error);
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        '프리셋 목록을 가져오는데 실패했습니다.'
+      );
+    }
   }
 );
 
 export const createPreset = createAsyncThunk(
   'presets/createPreset',
-  async (presetData) => {
-    const response = await axios.post(`${API_URL}/presets`, presetData);
-    return response.data;
+  async (presetData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/presets`, presetData);
+      return response.data;
+    } catch (error) {
+      console.error('프리셋 생성 API 오류:', error);
+      return rejectWithValue(error.response?.data?.message || '프리셋 생성에 실패했습니다.');
+    }
   }
 );
 
@@ -53,42 +69,10 @@ export const stopPreset = createAsyncThunk(
 );
 
 const initialState = {
-  items: [
-    {
-      id: 1,
-      name: '전시회 모드',
-      description: '관람객용 풀스크린 설정',
-      active: true,
-      commands: [
-        { clientId: 1, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_01 -fullscreen' },
-        { clientId: 2, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_02 -fullscreen' },
-        { clientId: 3, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/wall.ndisplay -dc_node=node_03 -fullscreen' }
-      ]
-    },
-    {
-      id: 2,
-      name: '데모 모드',
-      description: '시연용 특별 설정',
-      active: false,
-      commands: [
-        { clientId: 1, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=master -windowed' },
-        { clientId: 4, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=node_01 -windowed' },
-        { clientId: 5, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/demo.ndisplay -dc_node=node_02 -windowed' }
-      ]
-    },
-    {
-      id: 3,
-      name: '유지보수 모드',
-      description: '점검용 최소 실행',
-      active: false,
-      commands: [
-        { clientId: 1, command: 'C:/Displays/MyProject.exe -messaging -dc_cluster -dc_cfg=Config/test.ndisplay -dc_node=master -windowed -log' }
-      ]
-    }
-  ],
+  items: [],
   status: 'idle',
   error: null,
-  activePresetId: 1
+  activePresetId: null
 };
 
 const presetsSlice = createSlice({
@@ -113,18 +97,26 @@ const presetsSlice = createSlice({
       // fetchPresets
       .addCase(fetchPresets.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchPresets.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.items = action.payload;
+        state.error = null;
       })
       .addCase(fetchPresets.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message;
+        state.error = action.payload;
+        console.error('프리셋 목록 로드 실패:', action.payload);
       })
       // createPreset
       .addCase(createPreset.fulfilled, (state, action) => {
         state.items.push(action.payload);
+        state.status = 'succeeded';
+      })
+      .addCase(createPreset.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload || '프리셋 생성에 실패했습니다.';
       })
       // updatePreset
       .addCase(updatePreset.fulfilled, (state, action) => {

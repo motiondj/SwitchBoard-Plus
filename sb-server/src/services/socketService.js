@@ -9,15 +9,43 @@ const initializeSocket = (server) => {
     cors: {
       origin: '*',
       methods: ['GET', 'POST']
-    }
+    },
+    allowEIO3: true,
+    transports: ['polling', 'websocket'],
+    pingTimeout: 60000,
+    pingInterval: 25000
+  });
+
+  // 에러 핸들링
+  io.engine.on('connection_error', (err) => {
+    logger.error('Socket.io connection error:', err);
   });
 
   io.on('connection', (socket) => {
     logger.info(`Client connected: ${socket.id}`);
 
+    // 연결 에러 핸들링
+    socket.on('error', (error) => {
+      logger.error(`Socket error for client ${socket.id}:`, error);
+    });
+
     // 클라이언트 연결 해제
-    socket.on('disconnect', () => {
-      logger.info(`Client disconnected: ${socket.id}`);
+    socket.on('disconnect', async (reason) => {
+      logger.info(`Client disconnected: ${socket.id}, reason: ${reason}`);
+      
+      try {
+        const client = await Client.findOne({ where: { socketId: socket.id } });
+        if (client) {
+          await client.update({ status: 'offline' });
+          io.emit('client:status', {
+            uuid: client.uuid,
+            status: 'offline',
+            metrics: client.metrics
+          });
+        }
+      } catch (error) {
+        logger.error('Error updating client status on disconnect:', error);
+      }
     });
 
     // 클라이언트 상태 업데이트
@@ -27,7 +55,11 @@ const initializeSocket = (server) => {
         const client = await Client.findOne({ where: { uuid } });
         
         if (client) {
-          await client.update({ status, metrics });
+          await client.update({ 
+            status, 
+            metrics,
+            socketId: socket.id
+          });
           io.emit('client:status', { uuid, status, metrics });
         }
       } catch (error) {

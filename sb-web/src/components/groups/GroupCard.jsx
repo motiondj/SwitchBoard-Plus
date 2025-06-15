@@ -1,35 +1,22 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Button,
-  Box,
-  Chip,
-  IconButton,
-  Tooltip
-} from '@mui/material';
-import {
-  Edit as EditIcon,
-  Delete as DeleteIcon
-} from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { deleteGroup } from '../../store/slices/groupsSlice';
-import { openGroupModal } from '../../store/slices/uiSlice';
-import { showToast } from '../../store/slices/uiSlice';
-import { useSelector } from 'react-redux';
+import { openGroupModal, showToast } from '../../store/slices/uiSlice';
 
-const GroupCard = ({ group }) => {
+const GroupCard = ({ group, onEdit }) => {
   const dispatch = useDispatch();
-  const clients = useSelector((state) => state.clients.items) || [];
-  const groupClients = clients.filter(client => client.groupId === group.id);
+  const clients = useSelector(state => state.clients.items);
+  const clientList = group.Clients || group.clients || [];
 
-  const handleEdit = () => {
+  const handleEdit = (e) => {
+    e.stopPropagation();
     dispatch(openGroupModal(group.id));
+    if (onEdit) onEdit(group);
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e) => {
+    e.stopPropagation();
     if (window.confirm('이 그룹을 삭제하시겠습니까?')) {
       dispatch(deleteGroup(group.id))
         .unwrap()
@@ -60,73 +47,41 @@ const GroupCard = ({ group }) => {
   };
 
   return (
-    <Card 
-      sx={{ 
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        '&:hover': {
-          boxShadow: 6
-        }
-      }}
-    >
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="h6" component="h3" noWrap>
-            {group.name}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title="편집">
-              <IconButton size="small" onClick={handleEdit}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="삭제">
-              <IconButton size="small" color="error" onClick={handleDelete}>
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-
-        {group.description && (
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{ mb: 2 }}
-          >
-            {group.description}
-          </Typography>
-        )}
-
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {groupClients.map((client) => (
-            <Chip
-              key={client.id}
-              label={client.name}
-              size="small"
-              color={getClientStatusColor(client.status)}
-              sx={{ 
-                '& .MuiChip-label': {
-                  px: 1
-                }
-              }}
-            />
+    <div className="group-card" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="group-content">
+        <div className="group-header">
+          <div className="group-name">{group.name}</div>
+          <span style={{ fontSize: 12, color: '#666' }}>
+            {clientList.length}개 디스플레이 서버
+          </span>
+        </div>
+        <div className="group-clients">
+          {clientList.map(client => (
+            <span key={client.id} className={`client-tag ${client.status}`}>
+              {client.name}
+            </span>
           ))}
-        </Box>
-      </CardContent>
-
-      <CardActions sx={{ justifyContent: 'flex-end', px: 2, pb: 2 }}>
-        <Button
-          size="small"
-          startIcon={<EditIcon />}
+        </div>
+      </div>
+      <div className="group-actions" style={{ display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 2 }}>
+        <button
+          className="btn btn-secondary btn-small"
+          title="편집"
           onClick={handleEdit}
+          style={{ padding: 8 }}
         >
-          편집
-        </Button>
-      </CardActions>
-    </Card>
+          <FaEdit size={16} />
+        </button>
+        <button
+          className="btn btn-danger btn-small"
+          title="삭제"
+          onClick={handleDelete}
+          style={{ padding: 8 }}
+        >
+          <FaTrash size={16} />
+        </button>
+      </div>
+    </div>
   );
 };
 

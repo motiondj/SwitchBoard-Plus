@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
     config: {
       type: DataTypes.JSON,
       defaultValue: {}
+    },
+    selectedGroups: {
+      type: DataTypes.JSON,
+      allowNull: true
     }
   }, {
     timestamps: true

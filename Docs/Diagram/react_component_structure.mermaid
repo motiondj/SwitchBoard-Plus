@@ -1,0 +1,125 @@
+graph TD
+    subgraph "App.jsx (최상위)"
+        App[App Component]
+        Provider[Redux Provider]
+        Theme[Material-UI ThemeProvider]
+    end
+
+    subgraph "Layout Components"
+        Header[Header.jsx]
+        Container[MUI Container]
+        Toast[Toast.jsx]
+    end
+
+    subgraph "Dashboard (Dashboard.jsx)"
+        Dashboard[Dashboard Component]
+        StatsBar[StatsBar.jsx]
+        MainGrid[Grid Layout]
+    end
+
+    subgraph "Preset Section (왼쪽)"
+        PresetSection[PresetSection.jsx]
+        PresetList[PresetList.jsx]
+        PresetCard[PresetCard.jsx]
+        PresetModal[PresetModal.jsx]
+    end
+
+    subgraph "Group Section (오른쪽)"
+        GroupSection[GroupSection.jsx]
+        GroupList[GroupList.jsx]
+        GroupCard[GroupCard.jsx]
+        GroupModal[GroupModal.jsx]
+    end
+
+    subgraph "Client Monitor (하단)"
+        ClientMonitor[ClientMonitor.jsx]
+        ClientGrid[MUI Grid]
+        ClientCard[ClientCard.jsx]
+    end
+
+    subgraph "Redux Store"
+        Store[Redux Store]
+        ClientsSlice[clientsSlice.js]
+        PresetsSlice[presetsSlice.js]
+        GroupsSlice[groupsSlice.js]
+        UISlice[uiSlice.js]
+    end
+
+    subgraph "API Services"
+        ClientAPI[clientAPI.js]
+        PresetAPI[presetAPI.js]
+        GroupAPI[groupAPI.js]
+        SocketService[socketService.js]
+    end
+
+    %% 컴포넌트 계층 구조
+    App --> Provider
+    Provider --> Theme
+    Theme --> Header
+    Theme --> Container
+    Container --> Dashboard
+    Container --> Toast
+
+    Dashboard --> StatsBar
+    Dashboard --> MainGrid
+    MainGrid --> PresetSection
+    MainGrid --> GroupSection
+    Dashboard --> ClientMonitor
+
+    %% Preset Section 내부
+    PresetSection --> PresetList
+    PresetSection --> PresetModal
+    PresetList --> PresetCard
+
+    %% Group Section 내부
+    GroupSection --> GroupList
+    GroupSection --> GroupModal
+    GroupList --> GroupCard
+
+    %% Client Monitor 내부
+    ClientMonitor --> ClientGrid
+    ClientGrid --> ClientCard
+
+    %% Redux 연결
+    Provider -.-> Store
+    Store --> ClientsSlice
+    Store --> PresetsSlice
+    Store --> GroupsSlice
+    Store --> UISlice
+
+    %% 컴포넌트와 Redux 연결 (useSelector, useDispatch)
+    PresetCard -.->|useSelector| PresetsSlice
+    PresetCard -.->|useDispatch| PresetsSlice
+    GroupCard -.->|useSelector| GroupsSlice
+    GroupCard -.->|useDispatch| GroupsSlice
+    ClientCard -.->|useSelector| ClientsSlice
+    StatsBar -.->|useSelector| ClientsSlice
+    StatsBar -.->|useSelector| PresetsSlice
+
+    %% API 서비스 연결
+    PresetsSlice -.->|AsyncThunk| PresetAPI
+    GroupsSlice -.->|AsyncThunk| GroupAPI
+    ClientsSlice -.->|AsyncThunk| ClientAPI
+    Store -.->|Middleware| SocketService
+
+    %% Modal 상태 관리
+    PresetModal -.->|useSelector| UISlice
+    GroupModal -.->|useSelector| UISlice
+    Toast -.->|useSelector| UISlice
+
+    %% 스타일링
+    classDef appComponent fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    classDef layoutComponent fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef featureComponent fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef cardComponent fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef modalComponent fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef storeComponent fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    classDef apiComponent fill:#e0f2f1,stroke:#00796b,stroke-width:2px
+
+    class App,Provider,Theme appComponent
+    class Header,Container,Dashboard,StatsBar,MainGrid,ClientGrid layoutComponent
+    class PresetSection,GroupSection,ClientMonitor,PresetList,GroupList featureComponent
+    class PresetCard,GroupCard,ClientCard cardComponent
+    class PresetModal,GroupModal,Toast modalComponent
+    class Store,ClientsSlice,PresetsSlice,GroupsSlice,UISlice storeComponent
+    class ClientAPI,PresetAPI,GroupAPI,SocketService apiComponent

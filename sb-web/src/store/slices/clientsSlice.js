@@ -3,23 +3,23 @@ import clientAPI from '../../services/clientAPI';
 
 // 비동기 액션 생성
 export const fetchClients = createAsyncThunk(
-  'clients/fetchClients',
+  'clients/fetchAll',
   async () => {
     const response = await clientAPI.getAll();
-    return response.data;
+    return response;
   }
 );
 
 export const addClient = createAsyncThunk(
-  'clients/addClient',
-  async (client) => {
-    const response = await clientAPI.create(client);
+  'clients/add',
+  async (clientData) => {
+    const response = await clientAPI.create(clientData);
     return response.data;
   }
 );
 
 export const updateClient = createAsyncThunk(
-  'clients/updateClient',
+  'clients/update',
   async ({ id, data }) => {
     const response = await clientAPI.update(id, data);
     return response.data;
@@ -27,7 +27,7 @@ export const updateClient = createAsyncThunk(
 );
 
 export const deleteClient = createAsyncThunk(
-  'clients/deleteClient',
+  'clients/delete',
   async (id) => {
     await clientAPI.delete(id);
     return id;
@@ -35,15 +35,15 @@ export const deleteClient = createAsyncThunk(
 );
 
 export const executeCommand = createAsyncThunk(
-  'clients/executeCommand',
-  async ({ clientId, command }) => {
-    const response = await clientAPI.executeCommand(clientId, command);
+  'clients/execute',
+  async ({ clientIds, command }) => {
+    const response = await clientAPI.executeCommand(clientIds, command);
     return response.data;
   }
 );
 
 export const stopClients = createAsyncThunk(
-  'clients/stopClients',
+  'clients/stop',
   async (clientIds) => {
     const response = await clientAPI.stopClients(clientIds);
     return response.data;
@@ -51,17 +51,9 @@ export const stopClients = createAsyncThunk(
 );
 
 const initialState = {
-  items: [
-    { id: 1, name: 'Display 1', ip: '192.168.1.101', node: 'node_01', status: 'running' },
-    { id: 2, name: 'Display 2', ip: '192.168.1.102', node: 'node_02', status: 'online' },
-    { id: 3, name: 'Display 3', ip: '192.168.1.103', node: 'node_03', status: 'running' },
-    { id: 4, name: 'Display 4', ip: '192.168.1.104', node: 'node_04', status: 'offline' },
-    { id: 5, name: 'Display 5', ip: '192.168.1.105', node: 'node_05', status: 'online' },
-    { id: 6, name: 'Display 6', ip: '192.168.1.106', node: 'node_06', status: 'offline' }
-  ],
+  items: [],
   status: 'idle',
-  error: null,
-  metrics: {}
+  error: null
 };
 
 const clientsSlice = createSlice({
@@ -69,93 +61,108 @@ const clientsSlice = createSlice({
   initialState,
   reducers: {
     clientAdded: (state, action) => {
-      state.items.push(action.payload);
-    },
-    clientUpdated: (state, action) => {
-      const { id, ...changes } = action.payload;
-      const index = state.items.findIndex(item => item.id === id);
-      if (index !== -1) {
-        state.items[index] = { ...state.items[index], ...changes };
+      const existingClient = state.items.find(item => item.uuid === action.payload.uuid);
+      if (!existingClient) {
+        state.items.push(action.payload);
       }
     },
-    clientRemoved: (state, action) => {
-      const id = action.payload;
-      state.items = state.items.filter(item => item.id !== id);
-      delete state.metrics[id];
+    clientUpdated: (state, action) => {
+      const { uuid, status, metrics } = action.payload;
+      const client = state.items.find(item => item.uuid === uuid);
+      if (client) {
+        client.status = status;
+        if (metrics) {
+          client.metrics = metrics;
+        }
+      }
+    },
+    clientDisconnected: (state, action) => {
+      const client = state.items.find(item => item.uuid === action.payload);
+      if (client) {
+        client.status = 'offline';
+      }
     },
     metricsUpdated: (state, action) => {
-      const { id, metrics } = action.payload;
-      state.metrics[id] = metrics;
-    },
-    setStatus: (state, action) => {
-      state.status = action.payload;
-    },
-    setError: (state, action) => {
-      state.error = action.payload;
+      const { uuid, metrics } = action.payload;
+      const client = state.items.find(item => item.uuid === uuid);
+      if (client) {
+        client.metrics = metrics;
+      }
     }
   },
   extraReducers: (builder) => {
     builder
-      // fetchClients
       .addCase(fetchClients.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchClients.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.items = action.payload;
+        state.error = null;
       })
       .addCase(fetchClients.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
+        state.items = [];
       })
-      // addClient
       .addCase(addClient.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        const existingClient = state.items.find(item => item.uuid === action.payload.uuid);
+        if (!existingClient) {
+          state.items.push(action.payload);
+        }
       })
-      // updateClient
       .addCase(updateClient.fulfilled, (state, action) => {
-        const index = state.items.findIndex(item => item.id === action.payload.id);
+        const index = state.items.findIndex(item => item.uuid === action.payload.uuid);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
       })
-      // deleteClient
       .addCase(deleteClient.fulfilled, (state, action) => {
-        state.items = state.items.filter(item => item.id !== action.payload);
+        state.items = state.items.filter(item => item.uuid !== action.payload);
+      })
+      .addCase(executeCommand.fulfilled, (state, action) => {
+        const { clientIds } = action.payload;
+        clientIds.forEach(uuid => {
+          const client = state.items.find(item => item.uuid === uuid);
+          if (client) {
+            client.status = 'running';
+          }
+        });
+      })
+      .addCase(stopClients.fulfilled, (state, action) => {
+        const clientIds = action.payload;
+        clientIds.forEach(uuid => {
+          const client = state.items.find(item => item.uuid === uuid);
+          if (client) {
+            client.status = 'online';
+          }
+        });
       });
-  },
+  }
 });
+
+// Actions
+export const { clientAdded, clientUpdated, clientDisconnected, metricsUpdated } = clientsSlice.actions;
 
 // Selectors
 export const selectAllClients = state => state.clients.items;
-
-export const selectClientById = createSelector(
-  [state => state.clients.items, (state, id) => id],
-  (items, id) => items[id]
-);
-
-export const selectClientMetrics = createSelector(
-  [state => state.clients.metrics, (state, id) => id],
-  (metrics, id) => metrics[id]
-);
+export const selectClientById = (state, uuid) => 
+  state.clients.items.find(client => client.uuid === uuid);
 
 export const selectOnlineClients = createSelector(
   [selectAllClients],
-  clients => clients.filter(client => client.status === 'online')
+  clients => clients.filter(client => client.status === 'online' || client.status === 'running')
 );
 
-export const selectClientsByGroup = createSelector(
-  [selectAllClients, (state, groupId) => groupId],
-  (clients, groupId) => clients.filter(client => client.groupId === groupId)
+export const selectRunningClients = createSelector(
+  [selectAllClients],
+  clients => clients.filter(client => client.status === 'running')
 );
 
-export const {
-  clientAdded,
-  clientUpdated,
-  clientRemoved,
-  metricsUpdated,
-  setStatus,
-  setError
-} = clientsSlice.actions;
+export const selectOfflineClients = createSelector(
+  [selectAllClients],
+  clients => clients.filter(client => client.status === 'offline')
+);
 
 export default clientsSlice.reducer; 

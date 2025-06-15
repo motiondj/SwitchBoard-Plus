@@ -1,14 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
-import clientReducer from './slices/clientSlice';
-import presetReducer from './slices/presetSlice';
+import clientsReducer from './slices/clientsSlice';
+import presetsReducer from './slices/presetsSlice';
 import groupReducer from './slices/groupSlice';
 import uiReducer from './slices/uiSlice';
 import { socketMiddleware } from './middleware/socketMiddleware';
 
 const store = configureStore({
     reducer: {
-        clients: clientReducer,
-        presets: presetReducer,
+        clients: clientsReducer,
+        presets: presetsReducer,
         groups: groupReducer,
         ui: uiReducer
     },

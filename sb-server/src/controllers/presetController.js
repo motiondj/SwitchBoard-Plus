@@ -11,7 +11,8 @@ const getAllPresets = async (req, res) => {
         as: 'PresetCommands',
         include: [{
           model: Client,
-          as: 'Client'
+          as: 'Client',
+          attributes: ['id', 'name', 'ip']
         }]
       }]
     });
@@ -31,7 +32,8 @@ const getPresetById = async (req, res) => {
         as: 'PresetCommands',
         include: [{
           model: Client,
-          as: 'Client'
+          as: 'Client',
+          attributes: ['id', 'name', 'ip']
         }]
       }]
     });
@@ -51,12 +53,13 @@ const getPresetById = async (req, res) => {
 const createPreset = async (req, res, next) => {
   try {
     logger.info('[createPreset] 입력값:', req.body);
-    const { name, description, commands } = req.body;
+    const { name, description, commands, selectedGroups } = req.body;
 
     // 프리셋 생성
     const preset = await Preset.create({
       name,
-      description
+      description,
+      selectedGroups
     });
 
     // 명령어가 있는 경우에만 처리
@@ -87,8 +90,10 @@ const createPreset = async (req, res, next) => {
     const createdPreset = await Preset.findByPk(preset.id, {
       include: [{
         model: PresetCommand,
+        as: 'PresetCommands',
         include: [{
           model: Client,
+          as: 'Client',
           attributes: ['id', 'name', 'ip']
         }]
       }]
@@ -104,7 +109,7 @@ const createPreset = async (req, res, next) => {
 // 프리셋 업데이트
 const updatePreset = async (req, res) => {
   try {
-    const { name, description, commands } = req.body;
+    const { name, description, commands, selectedGroups } = req.body;
     const preset = await Preset.findByPk(req.params.id);
 
     if (!preset) {
@@ -117,7 +122,8 @@ const updatePreset = async (req, res) => {
 
     await preset.update({
       name,
-      description
+      description,
+      selectedGroups
     });
 
     if (commands) {

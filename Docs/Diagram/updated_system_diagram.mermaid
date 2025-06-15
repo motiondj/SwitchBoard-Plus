@@ -1,0 +1,146 @@
+graph TB
+    subgraph "사용자 인터페이스"
+        Browser[웹 브라우저]
+        Mobile[모바일 브라우저]
+    end
+
+    subgraph "React 웹 애플리케이션 (sb-web)"
+        subgraph "UI Layer"
+            MUI[Material-UI 컴포넌트]
+            Header[Header 컴포넌트]
+            Dashboard[Dashboard 컴포넌트]
+            PresetSection[프리셋 섹션]
+            GroupSection[그룹 섹션]
+            ClientMonitor[클라이언트 모니터]
+        end
+        
+        subgraph "State Management"
+            Redux[Redux Toolkit Store]
+            ClientsSlice[Clients Slice]
+            PresetsSlice[Presets Slice]
+            GroupsSlice[Groups Slice]
+            UISlice[UI Slice]
+        end
+        
+        subgraph "Service Layer"
+            AxiosAPI[Axios HTTP Client]
+            SocketClient[Socket.io Client]
+            APIServices[API Services]
+        end
+        
+        subgraph "Middleware"
+            SocketMiddleware[Socket Middleware]
+            AsyncThunks[Async Thunks]
+        end
+    end
+
+    subgraph "Node.js 서버 (sb-server)"
+        subgraph "Web Server"
+            Express[Express.js]
+            SocketServer[Socket.io Server]
+            CORS[CORS Middleware]
+        end
+        
+        subgraph "API Layer"
+            Controllers[API Controllers]
+            Routes[API Routes]
+            Middleware[Auth Middleware]
+        end
+        
+        subgraph "Business Logic"
+            Services[Business Services]
+            PresetEngine[프리셋 엔진]
+            GroupEngine[그룹 엔진]
+            ExecutionQueue[실행 큐]
+        end
+        
+        subgraph "Data Layer"
+            Sequelize[Sequelize ORM]
+            SQLite[(SQLite DB)]
+        end
+        
+        subgraph "Communication"
+            UDPListener[UDP 브로드캐스트 리스너]
+            Scheduler[Node-cron 스케줄러]
+        end
+    end
+
+    subgraph "Python 클라이언트들 (sb-client)"
+        subgraph "Client 1"
+            TrayApp1[PyQt5 트레이 앱]
+            ProcessMgr1[프로세스 관리자]
+            ServerComm1[서버 통신 모듈]
+            UE1[언리얼엔진 nDisplay]
+        end
+        
+        subgraph "Client 2"
+            TrayApp2[PyQt5 트레이 앱]
+            ProcessMgr2[프로세스 관리자]
+            ServerComm2[서버 통신 모듈]
+            UE2[언리얼엔진 nDisplay]
+        end
+        
+        subgraph "Client N"
+            TrayAppN[PyQt5 트레이 앱]
+            ProcessMgrN[프로세스 관리자]
+            ServerCommN[서버 통신 모듈]
+            UEN[언리얼엔진 nDisplay]
+        end
+    end
+
+    %% 연결선
+    Browser --> MUI
+    Mobile --> MUI
+    
+    %% React 내부 연결
+    MUI --> Redux
+    Redux --> APIServices
+    APIServices --> AxiosAPI
+    APIServices --> SocketClient
+    Redux --> SocketMiddleware
+    
+    %% 클라이언트-서버 통신
+    AxiosAPI -.->|HTTP/REST| Express
+    SocketClient -.->|WebSocket| SocketServer
+    
+    %% 서버 내부 연결
+    Express --> Controllers
+    Controllers --> Services
+    Services --> Sequelize
+    Sequelize --> SQLite
+    SocketServer --> Services
+    
+    %% 서버-클라이언트 통신
+    UDPListener -.->|UDP 브로드캐스트| ServerComm1
+    UDPListener -.->|UDP 브로드캐스트| ServerComm2
+    UDPListener -.->|UDP 브로드캐스트| ServerCommN
+    
+    Express -.->|HTTP Commands| ServerComm1
+    Express -.->|HTTP Commands| ServerComm2
+    Express -.->|HTTP Commands| ServerCommN
+    
+    %% 클라이언트 내부 연결
+    TrayApp1 --> ProcessMgr1
+    ProcessMgr1 --> UE1
+    TrayApp1 --> ServerComm1
+    
+    TrayApp2 --> ProcessMgr2
+    ProcessMgr2 --> UE2
+    TrayApp2 --> ServerComm2
+    
+    TrayAppN --> ProcessMgrN
+    ProcessMgrN --> UEN
+    TrayAppN --> ServerCommN
+
+    %% 스타일링
+    classDef reactComponent fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef reduxStore fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef serverComponent fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef clientComponent fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef database fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+
+    class MUI,Header,Dashboard,PresetSection,GroupSection,ClientMonitor reactComponent
+    class Redux,ClientsSlice,PresetsSlice,GroupsSlice,UISlice reduxStore
+    class Express,SocketServer,Controllers,Services,PresetEngine,GroupEngine serverComponent
+    class TrayApp1,TrayApp2,TrayAppN,ProcessMgr1,ProcessMgr2,ProcessMgrN clientComponent
+    class SQLite database

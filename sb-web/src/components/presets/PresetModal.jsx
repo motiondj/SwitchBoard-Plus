@@ -14,34 +14,77 @@ import {
   Chip
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { createPreset, updatePreset } from '../../store/slices/presetsSlice';
+import { createPreset, updatePreset, fetchPresets } from '../../store/slices/presetsSlice';
 import { closePresetModal } from '../../store/slices/uiSlice';
 
-const PresetModal = ({ isOpen, onClose }) => {
+const PresetModal = ({ isOpen, onClose, preset }) => {
   const dispatch = useDispatch();
-  const groups = useSelector(state => state.groups.items);
-  const clients = useSelector(state => state.clients.items);
+  const groups = useSelector(state => state.groups.items) || [];
+  const clients = useSelector(state => state.clients.items) || [];
 
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     name: '',
     description: '',
     selectedGroups: [],
     commands: {}
-  });
+  };
 
+  const [formData, setFormData] = useState(initialFormData);
   const [selectedGroupCount, setSelectedGroupCount] = useState(0);
   const [commandClientCount, setCommandClientCount] = useState(0);
+  const [error, setError] = useState('');
+
+  // 모달이 열릴 때마다 폼 초기화 (편집 모드 지원)
+  useEffect(() => {
+    if (isOpen) {
+      if (preset) {
+        setFormData({
+          name: preset.name || '',
+          description: preset.description || '',
+          selectedGroups: Array.isArray(preset.selectedGroups) ? preset.selectedGroups : [],
+          commands: (preset.commands || preset.PresetCommands || []).reduce((acc, cmd) => {
+            acc[cmd.clientId || (cmd.Client && cmd.Client.id)] = cmd.command;
+            return acc;
+          }, {})
+        });
+      } else {
+        setFormData(initialFormData);
+      }
+      setError('');
+    }
+  }, [isOpen, preset]);
 
   // 선택된 그룹의 클라이언트들 수집
   const selectedClients = React.useMemo(() => {
     const clientIds = new Set();
     formData.selectedGroups.forEach(groupId => {
       const group = groups.find(g => g.id === groupId);
-      if (group) {
-        group.clients.forEach(clientId => clientIds.add(clientId));
+      if (!group) return;
+      
+      // group.clients가 배열인 경우
+      if (Array.isArray(group.clients)) {
+        group.clients.forEach(clientId => {
+          if (typeof clientId === 'object' && clientId.id) {
+            clientIds.add(clientId.id);
+          } else {
+            clientIds.add(clientId);
+          }
+        });
+      }
+      
+      // group.Clients가 배열인 경우
+      if (Array.isArray(group.Clients)) {
+        group.Clients.forEach(client => {
+          if (client && client.id) {
+            clientIds.add(client.id);
+          }
+        });
       }
     });
-    return Array.from(clientIds);
+    
+    const result = Array.from(clientIds);
+    console.log('selectedClients 계산 결과:', result);
+    return result;
   }, [formData.selectedGroups, groups]);
 
   // 그룹 선택 토글
@@ -94,38 +137,71 @@ const PresetModal = ({ isOpen, onClose }) => {
   };
 
   // 폼 제출
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name) {
-      // TODO: 토스트 메시지 표시
+    if (!formData.name.trim()) {
+      setError('프리셋 이름을 입력해주세요.');
       return;
     }
 
     if (formData.selectedGroups.length === 0) {
-      // TODO: 토스트 메시지 표시
+      setError('최소 하나 이상의 그룹을 선택해주세요.');
       return;
     }
 
-    // 모든 클라이언트의 명령어가 입력되었는지 확인
-    const hasEmptyCommand = selectedClients.some(clientId => !formData.commands[clientId]);
-    if (hasEmptyCommand) {
-      // TODO: 토스트 메시지 표시
-      return;
+    try {
+      // 선택된 클라이언트들의 실제 정보 가져오기
+      const selectedClientDetails = clients.filter(client => 
+        selectedClients.includes(client.id)
+      );
+
+      if (selectedClientDetails.length === 0) {
+        setError('선택된 클라이언트가 없습니다.');
+        return;
+      }
+
+      // 각 클라이언트별로 명령어 매핑
+      const commands = selectedClientDetails.map(client => ({
+        clientId: client.id,
+        command: formData.commands[client.id] || '', // 각 클라이언트별 명령어
+        clientName: client.name // 클라이언트 이름 추가
+      }));
+
+      // 빈 명령어가 있는지 확인
+      const emptyCommands = commands.filter(cmd => !cmd.command.trim());
+      if (emptyCommands.length > 0) {
+        setError(`${emptyCommands.map(cmd => cmd.clientName).join(', ')}의 명령어가 비어있습니다.`);
+        return;
+      }
+
+      const presetData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        commands: commands,
+        selectedGroups: formData.selectedGroups,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('프리셋 생성 데이터:', presetData);
+      
+      // Redux action 사용
+      if (preset) {
+        // 편집 모드: updatePreset 호출 (id, data 형태로 전달)
+        await dispatch(updatePreset({ id: preset.id, data: presetData })).unwrap();
+      } else {
+        // 새로 만들기: createPreset 호출
+        await dispatch(createPreset(presetData)).unwrap();
+      }
+      // 성공 시 모달 닫기
+      onClose();
+      // 프리셋 목록 새로고침
+      dispatch(fetchPresets());
+      
+    } catch (error) {
+      console.error('프리셋 생성 중 오류:', error);
+      setError(error.message || '프리셋 생성에 실패했습니다.');
     }
-
-    // 프리셋 생성
-    const newPreset = {
-      name: formData.name,
-      description: formData.description,
-      commands: selectedClients.map(clientId => ({
-        clientId,
-        command: formData.commands[clientId]
-      }))
-    };
-
-    dispatch(createPreset(newPreset));
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -180,8 +256,9 @@ const PresetModal = ({ isOpen, onClose }) => {
                 <label>그룹 목록</label>
                 <div className="client-select-grid">
                   {groups.map(group => {
-                    const totalClients = group.clients.length;
-                    const onlineClients = group.clients.filter(clientId => {
+                    const clientList = group.clients || group.Clients || [];
+                    const totalClients = clientList.length;
+                    const onlineClients = clientList.filter(clientId => {
                       const client = clients.find(c => c.id === clientId);
                       return client && client.status !== 'offline';
                     }).length;
@@ -223,53 +300,41 @@ const PresetModal = ({ isOpen, onClose }) => {
                   <span className="badge">{commandClientCount}개 클라이언트</span>
                 </div>
 
-                {selectedClients.map(clientId => {
-                  const client = clients.find(c => c.id === clientId);
-                  if (!client) return null;
+                <div className="client-command-list">
+                  {selectedClients.map(clientId => {
+                    const client = clients.find(c => c.id === clientId);
+                    if (!client) return null;
 
-                  return (
-                    <div key={clientId} className="client-command-container">
-                      <div className="client-command-header">
-                        <div className="client-command-info">
-                          <div className="client-command-name">{client.name}</div>
-                          <div className="client-command-ip">
-                            {client.ip} ({client.node})
+                    return (
+                      <div key={clientId} className="client-command-container">
+                        <div className="client-command-header">
+                          <div className="client-command-info">
+                            <div className="client-command-name">{client.name}</div>
+                            <div className="client-command-ip">{client.ip}</div>
+                          </div>
+                          <div className={`client-status ${client.status === 'offline' ? 'offline' : 'online'}`}/>
+                        </div>
+                        <div className="command-input-group">
+                          <textarea
+                            className="command-textarea"
+                            value={formData.commands[clientId] || ''}
+                            onChange={e => setFormData(prev => ({
+                              ...prev,
+                              commands: {
+                                ...prev.commands,
+                                [clientId]: e.target.value
+                              }
+                            }))}
+                            placeholder="실행할 전체 명령어를 입력하세요"
+                          />
+                          <div className="form-help">
+                            이 디스플레이 서버에서 실행할 언리얼엔진 명령어를 입력하세요.
                           </div>
                         </div>
-                        <div className={`client-status ${client.status === 'offline' ? 'offline' : 'online'}`} />
                       </div>
-                      <div className="command-input-group">
-                        <textarea
-                          className="command-textarea"
-                          value={formData.commands[clientId] || ''}
-                          onChange={e => setFormData(prev => ({
-                            ...prev,
-                            commands: {
-                              ...prev.commands,
-                              [clientId]: e.target.value
-                            }
-                          }))}
-                          placeholder="실행할 전체 명령어를 입력하세요"
-                        />
-                        <div className="command-templates">
-                          {Object.keys(commandTemplates).map(templateName => (
-                            <button
-                              key={templateName}
-                              type="button"
-                              className="template-btn"
-                              onClick={() => applyTemplate(templateName, clientId)}
-                            >
-                              {templateName}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="form-help">
-                          이 디스플레이 서버에서 실행할 언리얼엔진 명령어를 입력하세요.
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>

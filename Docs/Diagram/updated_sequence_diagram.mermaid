@@ -1,0 +1,97 @@
+sequenceDiagram
+    participant User as 👤 관리자
+    participant Browser as 🌐 웹 브라우저
+    participant React as ⚛️ React App
+    participant Redux as 🏪 Redux Store
+    participant Socket as 🔌 Socket Middleware
+    participant API as 📡 API Service
+    participant Server as 🖥️ Node.js Server
+    participant DB as 🗄️ SQLite DB
+    participant Client as 🖱️ Python Client
+    participant UE as 🎮 언리얼엔진
+
+    Note over Browser, UE: 초기화 및 클라이언트 등록
+    
+    Client->>Server: UDP 브로드캐스트 (자동 등록)
+    Server->>DB: 클라이언트 정보 저장 (UUID 기반)
+    Server->>React: Socket 이벤트 (client:registered)
+    Socket->>Redux: updateClient 액션 디스패치
+    Redux->>React: 상태 업데이트
+    React->>Browser: ClientCard 컴포넌트 렌더링
+
+    Note over User, UE: 프리셋 생성 과정
+    
+    User->>Browser: "새 프리셋" 버튼 클릭
+    Browser->>React: PresetModal 컴포넌트 열기
+    React->>Redux: openModal('presetModal') 액션
+    Redux->>React: 모달 상태 업데이트
+    React->>Browser: PresetModal 표시
+    
+    User->>Browser: 프리셋 정보 입력 및 저장
+    Browser->>React: handleSave 이벤트
+    React->>Redux: createPreset AsyncThunk 디스패치
+    Redux->>API: presetAPI.createPreset() 호출
+    API->>Server: POST /api/presets
+    Server->>DB: 프리셋 데이터 저장
+    DB-->>Server: 저장 완료
+    Server-->>API: 생성된 프리셋 데이터
+    API-->>Redux: 응답 데이터
+    Redux->>React: 프리셋 목록 업데이트
+    React->>Browser: PresetCard 컴포넌트 렌더링
+
+    Note over User, UE: 프리셋 실행 과정
+    
+    User->>Browser: PresetCard "실행" 버튼 클릭
+    Browser->>React: handleExecute 이벤트
+    React->>Redux: executePreset(id) AsyncThunk
+    Redux->>API: presetAPI.executePreset(id)
+    API->>Server: POST /api/presets/:id/execute
+    Server->>DB: 프리셋 명령어 조회
+    DB-->>Server: 클라이언트별 명령어 목록
+    
+    loop 각 클라이언트별 명령 실행
+        Server->>Client: HTTP POST /command
+        Client->>Client: 명령어 파싱 및 검증
+        Client->>UE: subprocess.Popen() 실행
+        UE-->>Client: PID 반환
+        Client->>Server: 실행 결과 전송
+    end
+    
+    Server->>DB: 프리셋 상태 업데이트 (active=true)
+    Server->>React: Socket 이벤트 (preset:status)
+    Socket->>Redux: updatePresetStatus 액션
+    Redux->>React: 프리셋 상태 업데이트
+    React->>Browser: PresetCard 상태 변경 (활성화)
+
+    Note over Client, UE: 실시간 모니터링
+    
+    loop 30초마다
+        Client->>Client: psutil로 시스템 메트릭 수집
+        Client->>Server: 하트비트 + 메트릭 전송
+        Server->>React: Socket 이벤트 (client:metrics)
+        Socket->>Redux: updateClientMetrics 액션
+        Redux->>React: 클라이언트 메트릭 업데이트
+        React->>Browser: ClientCard 상태 표시 업데이트
+    end
+
+    Note over User, UE: 프리셋 중지 과정
+    
+    User->>Browser: PresetCard "중지" 버튼 클릭
+    Browser->>React: handleStop 이벤트
+    React->>Redux: stopPreset(id) AsyncThunk
+    Redux->>API: presetAPI.stopPreset(id)
+    API->>Server: POST /api/presets/:id/stop
+    Server->>DB: 활성 클라이언트 조회
+    
+    loop 각 활성 클라이언트
+        Server->>Client: HTTP POST /command (stop)
+        Client->>UE: 프로세스 종료 (PID 기반)
+        UE-->>Client: 종료 확인
+        Client->>Server: 중지 상태 보고
+    end
+    
+    Server->>DB: 프리셋 비활성화
+    Server->>React: Socket 이벤트 (preset:status)
+    Socket->>Redux: updatePresetStatus 액션
+    Redux->>React: 프리셋 상태 업데이트
+    React->>Browser: PresetCard 상태 변경 (비활성화)
