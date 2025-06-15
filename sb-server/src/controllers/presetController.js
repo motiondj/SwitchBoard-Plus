@@ -1,6 +1,7 @@
 const { Preset, PresetCommand, Client } = require('../models');
 const logger = require('../utils/logger');
 const { AppError } = require('../middleware/errorHandler');
+const { emitExecutionCommand, emitClientStatus, emitExecutionStop } = require('../services/socketService');
 
 // 모든 프리셋 조회
 const getAllPresets = async (req, res) => {
@@ -190,10 +191,7 @@ const executePreset = async (req, res) => {
       include: [{
         model: PresetCommand,
         as: 'PresetCommands',
-        include: [{
-          model: Client,
-          as: 'Client'
-        }]
+        include: [{ model: Client, as: 'Client' }]
       }]
     });
 
@@ -204,36 +202,146 @@ const executePreset = async (req, res) => {
     // 프리셋 상태 업데이트
     await preset.update({
       status: 'running',
+      active: true,
       lastRun: new Date()
     });
 
-    // 명령어 실행 로직은 여기에 구현
-    // 실제 구현에서는 각 클라이언트에 명령을 전송하고 결과를 수집하는 로직이 필요
+    // 실제 명령 실행: 각 클라이언트에 명령 전송
+    const executionResults = [];
+    for (const cmd of preset.PresetCommands) {
+      if (cmd.Client) {
+        const client = cmd.Client;
+        
+        // 클라이언트 상태 재확인
+        const currentClient = await Client.findOne({ where: { id: client.id } });
+        if (!currentClient) {
+          logger.warn(`[PRESET] 클라이언트를 찾을 수 없습니다: ${client.name} (${client.uuid})`);
+          executionResults.push({
+            clientId: client.id,
+            clientName: client.name,
+            success: false,
+            error: '클라이언트를 찾을 수 없습니다'
+          });
+          continue;
+        }
 
-    res.json({ message: 'Preset execution started' });
+        if (currentClient.status !== 'online') {
+          logger.warn(`[PRESET] 클라이언트가 오프라인 상태입니다: ${currentClient.name} (${currentClient.uuid})`);
+          executionResults.push({
+            clientId: currentClient.id,
+            clientName: currentClient.name,
+            success: false,
+            error: '클라이언트가 오프라인 상태입니다'
+          });
+          continue;
+        }
+
+        // 클라이언트 상태를 즉시 running으로 변경
+        await currentClient.update({ 
+          status: 'running',
+          lastStatusChange: new Date()  // 상태 변경 시간 기록
+        });
+        logger.info(`[PRESET] 클라이언트 상태를 running으로 즉시 변경: ${currentClient.name} (${currentClient.uuid})`);
+        // 상태 변경 이벤트 발송
+        emitClientStatus({
+          uuid: currentClient.uuid,
+          status: 'running',
+          metrics: currentClient.metrics
+        });
+
+        // nDisplay 명령인 경우 최소화 후 실행
+        if (cmd.command.includes('nDisplay')) {
+          const minimizeCommand = `
+            $processes = Get-Process | Where-Object { $_.MainWindowTitle -ne "" }
+            foreach ($process in $processes) {
+              $handle = $process.MainWindowHandle
+              if ($handle -ne [IntPtr]::Zero) {
+                [void][Win32.Window]::ShowWindow($handle, 6)
+              }
+            }
+          `;
+          
+          // 먼저 최소화 명령 실행
+          emitExecutionCommand(currentClient, `powershell -Command "${minimizeCommand}"`);
+          
+          // 2초 대기 후 nDisplay 실행
+          setTimeout(() => {
+            emitExecutionCommand(currentClient, cmd.command);
+          }, 2000);
+        } else {
+          logger.info(`[PRESET] 명령 실행 시도: ${currentClient.name} (${currentClient.uuid}) - ${cmd.command}`);
+          emitExecutionCommand(currentClient, cmd.command);
+        }
+        
+        executionResults.push({
+          clientId: currentClient.id,
+          clientName: currentClient.name,
+          success: true
+        });
+      }
+    }
+
+    res.json({ 
+      message: 'Preset execution started', 
+      id: preset.id,
+      results: executionResults
+    });
   } catch (error) {
     logger.error('Error executing preset:', error);
     res.status(500).json({ error: 'Failed to execute preset' });
   }
 };
 
-// 프리셋 중지
+// 프리셋 정지
 const stopPreset = async (req, res) => {
   try {
-    const preset = await Preset.findByPk(req.params.id);
+    const preset = await Preset.findByPk(req.params.id, {
+      include: [{
+        model: PresetCommand,
+        as: 'PresetCommands',
+        include: [{ model: Client, as: 'Client' }]
+      }]
+    });
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
     }
 
+    // 프리셋 상태 업데이트
     await preset.update({
-      status: 'stopped'
+      status: 'idle',
+      active: false
     });
 
-    // 실행 중인 명령어 중지 로직은 여기에 구현
-    // 실제 구현에서는 각 클라이언트에 중지 명령을 전송하는 로직이 필요
+    // 각 클라이언트의 상태를 online으로 변경
+    for (const cmd of preset.PresetCommands) {
+      if (cmd.Client) {
+        const client = cmd.Client;
+        const currentClient = await Client.findOne({ where: { id: client.id } });
+        
+        if (currentClient) {
+          // 1. 클라이언트에게 실행 중지 명령 전송
+          emitExecutionStop(currentClient);
 
-    res.json({ message: 'Preset execution stopped' });
+          // 2. 상태를 online으로 변경
+          await currentClient.update({ 
+            status: 'online',
+            lastStatusChange: new Date()  // 상태 변경 시간 기록
+          });
+          
+          emitClientStatus({
+            uuid: currentClient.uuid,
+            status: 'online',
+            metrics: currentClient.metrics
+          });
+        }
+      }
+    }
+
+    res.json({ 
+      message: 'Preset stopped', 
+      id: preset.id 
+    });
   } catch (error) {
     logger.error('Error stopping preset:', error);
     res.status(500).json({ error: 'Failed to stop preset' });

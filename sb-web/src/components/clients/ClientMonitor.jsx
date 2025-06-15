@@ -84,15 +84,6 @@ const ClientMonitor = () => {
     <Box className="client-monitor">
       <Box className="section-title">
         디스플레이 서버 모니터링
-        <Button
-          variant="contained"
-          color="secondary"
-          size="small"
-          onClick={refreshClients}
-          sx={{ padding: '8px 16px', fontSize: '13px', textTransform: 'none' }}
-        >
-          🔄 새로고침
-        </Button>
       </Box>
       <div className="client-grid">
         {clients.map(client => (

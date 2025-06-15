@@ -53,17 +53,17 @@ export const deletePreset = createAsyncThunk(
 );
 
 export const executePreset = createAsyncThunk(
-  'presets/executePreset',
-  async (id) => {
-    const response = await axios.post(`${API_URL}/presets/${id}/execute`);
+  'presets/execute',
+  async (presetId) => {
+    const response = await axios.post(`${API_URL}/presets/${presetId}/execute`);
     return response.data;
   }
 );
 
 export const stopPreset = createAsyncThunk(
-  'presets/stopPreset',
-  async (id) => {
-    const response = await axios.post(`${API_URL}/presets/${id}/stop`);
+  'presets/stop',
+  async (presetId) => {
+    const response = await axios.post(`${API_URL}/presets/${presetId}/stop`);
     return response.data;
   }
 );
@@ -72,7 +72,7 @@ const initialState = {
   items: [],
   status: 'idle',
   error: null,
-  activePresetId: null
+  activePresets: new Set()
 };
 
 const presetsSlice = createSlice({
@@ -85,9 +85,9 @@ const presetsSlice = createSlice({
       if (preset) {
         preset.status = status;
         if (status === 'running') {
-          state.activePresetId = id;
-        } else if (state.activePresetId === id) {
-          state.activePresetId = null;
+          state.activePresets.add(id);
+        } else if (state.activePresets.has(id)) {
+          state.activePresets.delete(id);
         }
       }
     },
@@ -128,27 +128,47 @@ const presetsSlice = createSlice({
       // deletePreset
       .addCase(deletePreset.fulfilled, (state, action) => {
         state.items = state.items.filter((p) => p.id !== action.payload);
-        if (state.activePresetId === action.payload) {
-          state.activePresetId = null;
+        if (state.activePresets.has(action.payload)) {
+          state.activePresets.delete(action.payload);
         }
       })
       // executePreset
+      .addCase(executePreset.pending, (state) => {
+        state.error = null;
+      })
       .addCase(executePreset.fulfilled, (state, action) => {
-        const preset = state.items.find((p) => p.id === action.payload.id);
-        if (preset) {
-          preset.status = 'running';
-          state.activePresetId = preset.id;
-        }
+        const presetId = action.payload.id ?? action.meta.arg;
+        console.log('executePreset.fulfilled payload:', action.payload, 'meta:', action.meta);
+        state.status = 'succeeded';
+        state.activePresets.add(presetId);
+        state.items = state.items.map(preset =>
+          String(preset.id) === String(presetId)
+            ? { ...preset, status: 'running', active: true }
+            : preset
+        );
+      })
+      .addCase(executePreset.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
       })
       // stopPreset
+      .addCase(stopPreset.pending, (state) => {
+        state.error = null;
+      })
       .addCase(stopPreset.fulfilled, (state, action) => {
-        const preset = state.items.find((p) => p.id === action.payload.id);
-        if (preset) {
-          preset.status = 'stopped';
-          if (state.activePresetId === preset.id) {
-            state.activePresetId = null;
-          }
-        }
+        const presetId = action.payload.id ?? action.meta.arg;
+        console.log('stopPreset.fulfilled payload:', action.payload, 'meta:', action.meta);
+        state.status = 'succeeded';
+        state.activePresets.delete(presetId);
+        state.items = state.items.map(preset =>
+          String(preset.id) === String(presetId)
+            ? { ...preset, status: 'stopped', active: false }
+            : preset
+        );
+      })
+      .addCase(stopPreset.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
       });
   },
 });

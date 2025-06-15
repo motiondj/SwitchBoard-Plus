@@ -56,11 +56,14 @@ const GroupCard = ({ group, onEdit }) => {
           </span>
         </div>
         <div className="group-clients">
-          {clientList.map(client => (
-            <span key={client.id} className={`client-tag ${client.status}`}>
-              {client.name}
-            </span>
-          ))}
+          {clientList.map(client => {
+            const ip = client.ip || (typeof client === 'object' ? client.ip : undefined);
+            return (
+              <span key={client.id} className={`client-tag ${client.status}`}>
+                {ip}
+              </span>
+            );
+          })}
         </div>
       </div>
       <div className="group-actions" style={{ display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 2 }}>
@@ -68,7 +71,7 @@ const GroupCard = ({ group, onEdit }) => {
           className="btn btn-secondary btn-small"
           title="편집"
           onClick={handleEdit}
-          style={{ padding: 8 }}
+          style={{ padding: 8, minWidth: 36, minHeight: 36, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <FaEdit size={16} />
         </button>
@@ -76,7 +79,7 @@ const GroupCard = ({ group, onEdit }) => {
           className="btn btn-danger btn-small"
           title="삭제"
           onClick={handleDelete}
-          style={{ padding: 8 }}
+          style={{ padding: 8, minWidth: 36, minHeight: 36, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <FaTrash size={16} />
         </button>

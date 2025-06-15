@@ -256,12 +256,10 @@ const PresetModal = ({ isOpen, onClose, preset }) => {
                 <label>그룹 목록</label>
                 <div className="client-select-grid">
                   {groups.map(group => {
-                    const clientList = group.clients || group.Clients || [];
-                    const totalClients = clientList.length;
-                    const onlineClients = clientList.filter(clientId => {
-                      const client = clients.find(c => c.id === clientId);
-                      return client && client.status !== 'offline';
-                    }).length;
+                    const clientIds = Array.isArray(group.clients) && group.clients.length > 0
+                      ? group.clients.map(c => (typeof c === 'object' ? c.id : c))
+                      : (Array.isArray(group.Clients) ? group.Clients.map(c => c.id) : []);
+                    const totalClients = clientIds.length;
 
                     return (
                       <div
@@ -275,12 +273,9 @@ const PresetModal = ({ isOpen, onClose, preset }) => {
                           onChange={() => {}}
                         />
                         <div className="client-info">
-                          <div className="client-name">{group.name}</div>
-                          <div className="client-ip">
-                            {totalClients}개 디스플레이 서버 ({onlineClients}개 온라인)
-                          </div>
+                          <div className="client-name">그룹 : {group.name}</div>
+                          <div className="client-ip">디스플레이 서버 : {totalClients}개</div>
                         </div>
-                        <div className={`client-status ${onlineClients > 0 ? 'online' : 'offline'}`} />
                       </div>
                     );
                   })}
@@ -309,8 +304,7 @@ const PresetModal = ({ isOpen, onClose, preset }) => {
                       <div key={clientId} className="client-command-container">
                         <div className="client-command-header">
                           <div className="client-command-info">
-                            <div className="client-command-name">{client.name}</div>
-                            <div className="client-command-ip">{client.ip}</div>
+                            <div className="client-name">{client.ip}</div>
                           </div>
                           <div className={`client-status ${client.status === 'offline' ? 'offline' : 'online'}`}/>
                         </div>

@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM('idle', 'running', 'error'),
       defaultValue: 'idle'
     },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     lastRun: {
       type: DataTypes.DATE,
       allowNull: true

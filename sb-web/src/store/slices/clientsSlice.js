@@ -88,6 +88,22 @@ const clientsSlice = createSlice({
       if (client) {
         client.metrics = metrics;
       }
+    },
+    setClientsRunningByPreset: (state, action) => {
+      const { clientIds } = action.payload;
+      state.items.forEach(client => {
+        if (clientIds.includes(String(client.id))) {
+          client.status = 'running';
+        }
+      });
+    },
+    setClientsOnlineByPreset: (state, action) => {
+      const { clientIds } = action.payload;
+      state.items.forEach(client => {
+        if (clientIds.includes(String(client.id))) {
+          client.status = 'online';
+        }
+      });
     }
   },
   extraReducers: (builder) => {
@@ -143,7 +159,7 @@ const clientsSlice = createSlice({
 });
 
 // Actions
-export const { clientAdded, clientUpdated, clientDisconnected, metricsUpdated } = clientsSlice.actions;
+export const { clientAdded, clientUpdated, clientDisconnected, metricsUpdated, setClientsRunningByPreset, setClientsOnlineByPreset } = clientsSlice.actions;
 
 // Selectors
 export const selectAllClients = state => state.clients.items;

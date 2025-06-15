@@ -123,7 +123,6 @@ const GroupModal = ({ open, group, onClose }) => {
                     readOnly
                   />
                   <div className="client-info">
-                    <div className="client-name">{client.name}</div>
                     <div className="client-ip">{client.ip}</div>
                   </div>
                   <div className={`client-status ${client.status === 'offline' ? 'offline' : 'online'}`}></div>

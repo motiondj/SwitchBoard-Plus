@@ -19,8 +19,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     status: {
-      type: DataTypes.ENUM('online', 'offline', 'error'),
+      type: DataTypes.ENUM('online', 'offline', 'running', 'error'),
       defaultValue: 'offline'
+    },
+    socketId: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     lastSeen: {
       type: DataTypes.DATE,
@@ -40,6 +44,9 @@ module.exports = (sequelize, DataTypes) => {
       {
         unique: true,
         fields: ['uuid']
+      },
+      {
+        fields: ['socketId']
       }
     ]
   });

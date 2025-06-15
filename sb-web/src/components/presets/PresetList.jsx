@@ -17,10 +17,10 @@ const PresetList = ({ onEdit, onDelete }) => {
         console.error('프리셋 목록 로드 실패:', error);
       }
     };
-
     loadPresets();
   }, [dispatch]);
 
+  // 디버깅용 콘솔 출력
   console.log('PresetList 렌더링:', { presets, status, error });
 
   if (status === 'loading') {
@@ -49,7 +49,8 @@ const PresetList = ({ onEdit, onDelete }) => {
     );
   }
 
-  if (!presets || presets.length === 0) {
+  // 프리셋이 배열이 아니거나 undefined/null인 경우 방어
+  if (!Array.isArray(presets) || presets.length === 0) {
     return (
       <div className="empty-container">
         <div style={{ color: '#888', padding: '20px 0' }}>등록된 프리셋이 없습니다.</div>
